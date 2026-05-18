@@ -1,0 +1,125 @@
+services:
+  # ─────────────── PostgreSQL + PostGIS ───────────────
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: petalia_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-petalia_geo}
+      POSTGRES_USER: ${POSTGRES_USER:-petalia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-petalia}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ─────────────── Redis ───────────────
+  redis:
+    image: redis:7-alpine
+    container_name: petalia_redis
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─────────────── API Server ───────────────
+  api:
+    image: ${DOCKERHUB_USERNAME}/petalia-geospatial-engine-api:${IMAGE_TAG:-latest}
+    container_name: petalia_api
+    env_file: .env.production
+    environment:
+      GEE_PRIVATE_KEY_PATH: /run/secrets/gee_service_account.json
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-petalia}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-petalia_geo}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/2
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - /opt/petalia/secrets:/run/secrets:ro
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --workers 4
+
+  # ─────────────── Celery Worker ───────────────
+  worker:
+    image: ${DOCKERHUB_USERNAME}/petalia-geospatial-engine-worker:${IMAGE_TAG:-latest}
+    container_name: petalia_worker
+    env_file: .env.production
+    environment:
+      GEE_PRIVATE_KEY_PATH: /run/secrets/gee_service_account.json
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-petalia}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-petalia_geo}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - /opt/petalia/secrets:/run/secrets:ro
+    restart: unless-stopped
+
+  # ─────────────── Flower ───────────────
+  flower:
+    image: mher/flower:2.0
+    container_name: petalia_flower
+    command: >
+      celery --broker=redis://:${REDIS_PASSWORD}@redis:6379/1
+      flower --port=5555 --basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}
+    ports:
+      - "127.0.0.1:5555:5555"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # ─────────────── Prometheus ───────────────
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: petalia_prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+
+  # ─────────────── Grafana ───────────────
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: petalia_grafana
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

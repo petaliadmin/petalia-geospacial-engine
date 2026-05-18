@@ -1,0 +1,138 @@
+services:
+  # ─────────────── PostgreSQL + PostGIS ───────────────
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: petalia_postgres
+    environment:
+      POSTGRES_DB: petalia_geo
+      POSTGRES_USER: petalia
+      POSTGRES_PASSWORD: petalia_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U petalia -d petalia_geo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ─────────────── Redis ───────────────
+  redis:
+    image: redis:7-alpine
+    container_name: petalia_redis
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─────────────── API Server ───────────────
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: petalia_api
+    env_file: .env
+    environment:
+      # Override local-dev path from .env; secrets dir is volume-mounted at /run/secrets
+      GEE_PRIVATE_KEY_PATH: /run/secrets/gee_service_account.json
+      DATABASE_URL: postgresql+asyncpg://petalia:petalia_pass@postgres:5432/petalia_geo
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./secrets:/run/secrets:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn src.main:app --host 0.0.0.0 --port 8000 --workers 4"
+
+  # ─────────────── Celery Worker ───────────────
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: petalia_worker
+    env_file: .env
+    environment:
+      GEE_PRIVATE_KEY_PATH: /run/secrets/gee_service_account.json
+      DATABASE_URL: postgresql+asyncpg://petalia:petalia_pass@postgres:5432/petalia_geo
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./secrets:/run/secrets:ro
+    restart: unless-stopped
+
+  # ─────────────── Flower (Celery monitoring) ───────────────
+  flower:
+    image: mher/flower:2.0
+    container_name: petalia_flower
+    command: >
+      celery
+        --broker=redis://redis:6379/1
+        flower
+        --port=5555
+        --basic_auth=admin:flower_password_change_me
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # ─────────────── Prometheus ───────────────
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: petalia_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+
+  # ─────────────── Grafana ───────────────
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: petalia_grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=grafana_password_change_me
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
