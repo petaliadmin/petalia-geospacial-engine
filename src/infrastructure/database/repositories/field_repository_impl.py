@@ -1,4 +1,4 @@
-
+from shapely.geometry import shape
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,6 +31,8 @@ class SQLFieldRepository(AbstractFieldRepository):
             external_id=field.external_id,
             geometry=field.geometry,
             area_ha=field.area_ha,
+            # S2-4: Populate the PostGIS native geom column — required for spatial queries
+            geom=self._geojson_to_wkt(field.geometry),
             created_at=field.created_at,
             updated_at=field.updated_at,
         )
@@ -45,6 +47,8 @@ class SQLFieldRepository(AbstractFieldRepository):
         model = result.scalar_one()
         model.geometry = field.geometry
         model.area_ha = field.area_ha
+        # S2-4: Keep geom in sync with geometry JSON on every update
+        model.geom = self._geojson_to_wkt(field.geometry)
         model.updated_at = field.updated_at
         await self._session.flush()
         return field
@@ -54,6 +58,23 @@ class SQLFieldRepository(AbstractFieldRepository):
             select(FieldModel).limit(limit).offset(offset)
         )
         return [self._to_entity(m) for m in result.scalars().all()]
+
+    @staticmethod
+    def _geojson_to_wkt(geometry: dict) -> str | None:
+        """S2-4: Convert a GeoJSON geometry dict to a WKT string with SRID prefix.
+
+        Uses Shapely to produce a valid WKT from any GeoJSON geometry type
+        (Polygon, MultiPolygon, etc.). The SRID=4326 prefix is required by
+        PostGIS ST_GeomFromEWKT / WKB readers.
+
+        Returns None if conversion fails — the geom column is nullable so that
+        a malformed geometry does not block the analysis pipeline.
+        """
+        try:
+            wkt = shape(geometry).wkt
+            return f"SRID=4326;{wkt}"
+        except Exception:
+            return None
 
     @staticmethod
     def _to_entity(model: FieldModel) -> Field:

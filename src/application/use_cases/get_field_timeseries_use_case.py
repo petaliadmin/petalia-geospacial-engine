@@ -54,7 +54,12 @@ class GetFieldTimeseriesUseCase:
                     analysis_id=m.analysis_id,
                     analysis_date=analysis.completed_at or analysis.created_at,
                     ndvi_mean=m.ndvi_mean,
-                    ndwi_mean=m.ndwi_mean,
+                    # S1-3: was ndwi_mean — renamed to ndmi_mean throughout
+                    ndmi_mean=m.ndmi_mean,
+                    # S4-3: Multi-index timeseries — None for pre-existing analyses
+                    ndre_mean=getattr(m, "ndre_mean", None),
+                    savi_mean=getattr(m, "savi_mean", None),
+                    evi2_mean=getattr(m, "evi2_mean", None),
                     cloud_coverage=obs.cloud_coverage if obs else None,
                     trend=m.trend,
                     health=m.health,

@@ -28,7 +28,8 @@ class VegetationDTO:
 
 @dataclass
 class WaterDTO:
-    mean_ndwi: float
+    # S1-3: renamed from mean_ndwi to mean_ndmi (formula B8-B11 = NDMI, not NDWI)
+    mean_ndmi: float
 
 
 @dataclass
@@ -61,10 +62,14 @@ class FieldAnalysisDTO:
 
 @dataclass
 class TimeseriesEntryDTO:
+    """S4-3: Multi-index timeseries entry — includes all vegetation indices."""
     analysis_id: str
     analysis_date: datetime
     ndvi_mean: float
-    ndwi_mean: float
+    ndmi_mean: float          # S1-3: was ndwi_mean
+    ndre_mean: float | None   # S2-1/S4-3: None for analyses before this feature
+    savi_mean: float | None   # S2-1/S4-3
+    evi2_mean: float | None   # S2-1/S4-3
     cloud_coverage: float | None
     trend: VegetationTrend
     health: VegetationHealth
@@ -75,3 +80,23 @@ class FieldTimeseriesDTO:
     field_id: str
     entries: list[TimeseriesEntryDTO]
     total: int
+
+
+# -----------------------------------------------------------------------
+# S4-1: Batch analysis DTOs
+# -----------------------------------------------------------------------
+
+@dataclass
+class BatchAnalysisItemDTO:
+    field_id: str
+    analysis_id: str | None
+    status: str
+    error: str | None
+
+
+@dataclass
+class BatchAnalysisResultDTO:
+    submitted: int
+    succeeded: int
+    failed: int
+    items: list[BatchAnalysisItemDTO]

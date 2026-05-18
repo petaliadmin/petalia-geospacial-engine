@@ -27,7 +27,9 @@ class FieldModel(Base):
     external_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     geometry: Mapped[dict] = mapped_column(JSON, nullable=False)
     area_ha: Mapped[float] = mapped_column(Float, nullable=False)
-    geom = Column(GeoAlchemyGeometry("POLYGON", srid=4326), nullable=True)
+    # S2-4: geom is the native PostGIS geometry — populated by field_repository_impl.
+    # Migration 004 converts this from Text to geometry(Geometry, 4326) + GIST index.
+    geom = Column(GeoAlchemyGeometry("GEOMETRY", srid=4326), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -46,13 +48,13 @@ class AnalysisModel(Base):
 
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
     field_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("fields.id"), nullable=False, index=True
+        String(36), ForeignKey("fields.id", ondelete="CASCADE"), nullable=False, index=True
     )
     status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     requested_metrics: Mapped[list[str]] = mapped_column(
         ARRAY(String), nullable=False, default=list
     )
-    algorithm_version: Mapped[str] = mapped_column(String(20), nullable=False, default="1.0.0")
+    algorithm_version: Mapped[str] = mapped_column(String(20), nullable=False, default="2.0.0")
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -74,7 +76,7 @@ class SatelliteObservationModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     analysis_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("analyses.id"), nullable=False, unique=True, index=True
+        String(50), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
     )
     acquisition_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     cloud_coverage: Mapped[float] = mapped_column(Float, nullable=False)
@@ -90,13 +92,18 @@ class VegetationMetricsModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     analysis_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("analyses.id"), nullable=False, unique=True, index=True
+        String(50), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
     )
     ndvi_mean: Mapped[float] = mapped_column(Float, nullable=False)
     ndvi_min: Mapped[float] = mapped_column(Float, nullable=False)
     ndvi_max: Mapped[float] = mapped_column(Float, nullable=False)
     ndvi_std: Mapped[float] = mapped_column(Float, nullable=False)
-    ndwi_mean: Mapped[float] = mapped_column(Float, nullable=False)
+    # S1-3: Renamed from ndwi_mean — formula (B8-B11)/(B8+B11) = NDMI, not NDWI
+    ndmi_mean: Mapped[float] = mapped_column(Float, nullable=False)
+    # S2-1: New precision agriculture indices — nullable for backward compat
+    ndre_mean: Mapped[float | None] = mapped_column(Float, nullable=True)
+    savi_mean: Mapped[float | None] = mapped_column(Float, nullable=True)
+    evi2_mean: Mapped[float | None] = mapped_column(Float, nullable=True)
     variability_index: Mapped[float] = mapped_column(Float, nullable=False)
     trend: Mapped[str] = mapped_column(String(20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -109,10 +116,10 @@ class AgronomicAlertModel(Base):
 
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
     field_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("fields.id"), nullable=False, index=True
+        String(36), ForeignKey("fields.id", ondelete="CASCADE"), nullable=False, index=True
     )
     analysis_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("analyses.id"), nullable=False, index=True
+        String(50), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False, index=True
     )
     severity: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     alert_type: Mapped[str] = mapped_column(String(50), nullable=False)

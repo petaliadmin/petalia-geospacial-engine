@@ -9,7 +9,11 @@ def create_celery_app() -> Celery:
         "petalia-geospatial-engine",
         broker=settings.celery_broker_url,
         backend=settings.celery_result_backend,
-        include=["src.infrastructure.workers.analysis_worker"],
+        include=[
+            "src.infrastructure.workers.analysis_worker",
+            "src.infrastructure.workers.batch_analysis_worker",  # S4-1
+            "src.infrastructure.workers.gee_export_worker",      # S4-4
+        ],
     )
     app.conf.update(
         task_serializer=settings.celery_task_serializer,
@@ -23,6 +27,9 @@ def create_celery_app() -> Celery:
         task_reject_on_worker_lost=True,
         task_routes={
             "src.infrastructure.workers.analysis_worker.run_analysis": {"queue": "analysis"},
+            "src.infrastructure.workers.batch_analysis_worker.run_analysis_safe": {"queue": "analysis"},
+            "src.infrastructure.workers.batch_analysis_worker.on_batch_completed": {"queue": "analysis"},
+            "src.infrastructure.workers.gee_export_worker.run_gee_export_analysis": {"queue": "export"},
         },
         task_default_queue="analysis",
         broker_connection_retry_on_startup=True,

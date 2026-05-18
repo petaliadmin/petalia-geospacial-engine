@@ -1,6 +1,38 @@
 """Root conftest — pure fixtures only, no infrastructure imports.
 DB/app fixtures live in tests/integration/conftest.py and tests/api/conftest.py.
 """
+from src.domain.entities.vegetation_metrics import VegetationMetrics
+from src.domain.value_objects.vegetation_trend import VegetationTrend
+
+
+def make_metrics(
+    ndvi_mean: float = 0.60,
+    ndvi_min: float = 0.30,
+    ndvi_max: float = 0.85,
+    ndvi_std: float = 0.10,
+    ndmi_mean: float = 0.05,
+    ndre_mean: float | None = 0.30,
+    savi_mean: float | None = 0.40,
+    evi2_mean: float | None = 0.50,
+    variability_index: float = 0.15,
+    trend: VegetationTrend = VegetationTrend.STABLE,
+    analysis_id: str = "test-analysis-id",
+) -> VegetationMetrics:
+    """Factory helper for VegetationMetrics — avoids DB dependency in unit tests."""
+    return VegetationMetrics(
+        id="test-metrics-id",
+        analysis_id=analysis_id,
+        ndvi_mean=ndvi_mean,
+        ndvi_min=ndvi_min,
+        ndvi_max=ndvi_max,
+        ndvi_std=ndvi_std,
+        ndmi_mean=ndmi_mean,
+        ndre_mean=ndre_mean,
+        savi_mean=savi_mean,
+        evi2_mean=evi2_mean,
+        variability_index=variability_index,
+        trend=trend,
+    )
 import asyncio
 from unittest.mock import AsyncMock
 

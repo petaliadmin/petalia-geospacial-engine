@@ -50,7 +50,7 @@ async def get_field_latest(
 @router.get(
     "/{field_id}/timeseries",
     response_model=FieldTimeseriesResponse,
-    summary="Get NDVI/NDWI timeseries for a field",
+    summary="Get vegetation index timeseries for a field (NDVI, NDMI, NDRE, SAVI, EVI2)",
 )
 async def get_field_timeseries(
     field_id: str,
@@ -68,7 +68,10 @@ async def get_field_timeseries(
                     analysisId=e.analysis_id,  # noqa: N815
                     analysisDate=e.analysis_date,  # noqa: N815
                     ndviMean=e.ndvi_mean,  # noqa: N815
-                    ndwiMean=e.ndwi_mean,  # noqa: N815
+                    ndmiMean=e.ndmi_mean,  # noqa: N815  S1-3: was ndwiMean
+                    ndreMean=e.ndre_mean,  # noqa: N815  S4-3
+                    saviMean=e.savi_mean,  # noqa: N815  S4-3
+                    evi2Mean=e.evi2_mean,  # noqa: N815  S4-3
                     cloudCoverage=e.cloud_coverage,  # noqa: N815
                     trend=e.trend,
                     health=e.health,

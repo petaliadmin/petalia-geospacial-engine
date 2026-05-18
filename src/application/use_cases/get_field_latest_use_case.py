@@ -67,7 +67,7 @@ class GetFieldLatestUseCase:
                 trend=metrics.trend,
                 health=metrics.health,
             )
-            water_dto = WaterDTO(mean_ndwi=metrics.ndwi_mean)
+            water_dto = WaterDTO(mean_ndmi=metrics.ndmi_mean)  # S1-3
 
         tile_url = await self._cache.get_tiles(query.field_id)
         thumbnail_url = await self._cache.get_thumbnail(query.field_id)
