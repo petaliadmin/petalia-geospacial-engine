@@ -58,7 +58,7 @@ services:
     volumes:
       - ./secrets:/run/secrets:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -99,7 +99,7 @@ services:
         --broker=redis://redis:6379/1
         flower
         --port=5555
-        --basic_auth=admin:flower_password_change_me
+        --basic_auth=${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-flower_dev_password}
     ports:
       - "5555:5555"
     depends_on:
@@ -124,7 +124,7 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=grafana_password_change_me
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-grafana_dev_password}
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
