@@ -1,16 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from src.domain.entities.analysis import Analysis
-from src.domain.value_objects.analysis_status import AnalysisStatus
 
 
 class AbstractAnalysisRepository(ABC):
     @abstractmethod
-    async def get_by_id(self, analysis_id: str) -> Optional[Analysis]: ...
+    async def get_by_id(self, analysis_id: str) -> Analysis | None: ...
 
     @abstractmethod
-    async def get_latest_for_field(self, field_id: str) -> Optional[Analysis]: ...
+    async def get_latest_for_field(self, field_id: str) -> Analysis | None: ...
 
     @abstractmethod
     async def list_for_field(
@@ -21,7 +19,7 @@ class AbstractAnalysisRepository(ABC):
     ) -> list[Analysis]: ...
 
     @abstractmethod
-    async def get_running_for_field(self, field_id: str) -> Optional[Analysis]: ...
+    async def get_running_for_field(self, field_id: str) -> Analysis | None: ...
 
     @abstractmethod
     async def save(self, analysis: Analysis) -> Analysis: ...

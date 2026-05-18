@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
-from fastapi import Depends, HTTPException, Security, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyHeader
+from fastapi import HTTPException, Security, status
+from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
 from src.shared.config import get_settings
@@ -15,9 +14,9 @@ http_bearer = HTTPBearer(auto_error=False)
 VALID_API_KEYS: set[str] = {_settings.api_key_value}
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=_settings.jwt_access_token_expire_minutes)
     )
     to_encode["exp"] = expire
@@ -36,8 +35,8 @@ def decode_access_token(token: str) -> dict:
 
 
 async def get_current_user(
-    api_key: Optional[str] = Security(api_key_header),
-    bearer: Optional[HTTPAuthorizationCredentials] = Security(http_bearer),
+    api_key: str | None = Security(api_key_header),
+    bearer: HTTPAuthorizationCredentials | None = Security(http_bearer),
 ) -> dict:
     """Accept either API key or JWT bearer token."""
     if api_key and api_key in VALID_API_KEYS:

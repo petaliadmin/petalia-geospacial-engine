@@ -3,7 +3,7 @@
 All API tests mock at the use-case layer, so no live database is needed here.
 The session dependency is overridden with an AsyncMock to avoid any DB connection.
 """
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock
 
 import pytest_asyncio

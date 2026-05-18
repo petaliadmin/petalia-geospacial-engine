@@ -1,9 +1,8 @@
-import math
 from typing import Any
 
-from shapely.geometry import mapping, shape
-from shapely.ops import transform
 import pyproj
+from shapely.geometry import shape
+from shapely.ops import transform
 
 
 def compute_area_hectares(geojson: dict[str, Any]) -> float:

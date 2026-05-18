@@ -12,7 +12,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSON, UUID
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -45,9 +45,13 @@ class AnalysisModel(Base):
     __tablename__ = "analyses"
 
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
-    field_id: Mapped[str] = mapped_column(String(36), ForeignKey("fields.id"), nullable=False, index=True)
+    field_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("fields.id"), nullable=False, index=True
+    )
     status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    requested_metrics: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    requested_metrics: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, default=list
+    )
     algorithm_version: Mapped[str] = mapped_column(String(20), nullable=False, default="1.0.0")
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -104,8 +108,12 @@ class AgronomicAlertModel(Base):
     __tablename__ = "agronomic_alerts"
 
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
-    field_id: Mapped[str] = mapped_column(String(36), ForeignKey("fields.id"), nullable=False, index=True)
-    analysis_id: Mapped[str] = mapped_column(String(50), ForeignKey("analyses.id"), nullable=False, index=True)
+    field_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("fields.id"), nullable=False, index=True
+    )
+    analysis_id: Mapped[str] = mapped_column(
+        String(50), ForeignKey("analyses.id"), nullable=False, index=True
+    )
     severity: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     alert_type: Mapped[str] = mapped_column(String(50), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.shared.exceptions import InvalidGeometryException
-from src.shared.utils import validate_geojson_geometry, compute_area_hectares
+from src.shared.utils import compute_area_hectares, validate_geojson_geometry
 
 
 @dataclass(frozen=True)

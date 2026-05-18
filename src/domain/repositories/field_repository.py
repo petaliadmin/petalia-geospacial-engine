@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from src.domain.entities.field import Field
 
 
 class AbstractFieldRepository(ABC):
     @abstractmethod
-    async def get_by_id(self, field_id: str) -> Optional[Field]: ...
+    async def get_by_id(self, field_id: str) -> Field | None: ...
 
     @abstractmethod
-    async def get_by_external_id(self, external_id: str) -> Optional[Field]: ...
+    async def get_by_external_id(self, external_id: str) -> Field | None: ...
 
     @abstractmethod
     async def save(self, field: Field) -> Field: ...

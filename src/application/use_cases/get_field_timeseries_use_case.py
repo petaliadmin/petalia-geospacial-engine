@@ -1,12 +1,12 @@
 import structlog
 
 from src.application.dto.analysis_dto import FieldTimeseriesDTO, TimeseriesEntryDTO
+from src.application.ports.cache_port import AbstractCacheService
 from src.application.queries.get_field_timeseries_query import GetFieldTimeseriesQuery
 from src.domain.repositories.analysis_repository import AbstractAnalysisRepository
 from src.domain.repositories.field_repository import AbstractFieldRepository
 from src.domain.repositories.metrics_repository import AbstractMetricsRepository
 from src.domain.repositories.observation_repository import AbstractObservationRepository
-from src.application.ports.cache_port import AbstractCacheService
 from src.shared.exceptions import FieldNotFoundException
 
 logger = structlog.get_logger(__name__)

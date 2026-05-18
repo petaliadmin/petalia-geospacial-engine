@@ -1,5 +1,6 @@
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 
 from src.application.commands.create_analysis_command import CreateAnalysisCommand
 from src.application.use_cases.create_analysis_use_case import CreateAnalysisUseCase

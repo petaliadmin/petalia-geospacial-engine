@@ -1,6 +1,6 @@
 import json
 from dataclasses import asdict
-from typing import Any, Optional
+from typing import Any
 
 import structlog
 
@@ -35,7 +35,7 @@ class RedisCacheService(AbstractCacheService):
             return json.dumps(asdict(data), default=str)
         return json.dumps(data, default=str)
 
-    async def get_latest(self, field_id: str) -> Optional[dict]:
+    async def get_latest(self, field_id: str) -> dict | None:
         raw = await self._redis.get(self._latest_key(field_id))
         if raw:
             return json.loads(raw)
@@ -49,7 +49,7 @@ class RedisCacheService(AbstractCacheService):
         )
         logger.debug("cache_set_latest", field_id=field_id)
 
-    async def get_timeseries(self, field_id: str) -> Optional[dict]:
+    async def get_timeseries(self, field_id: str) -> dict | None:
         raw = await self._redis.get(self._timeseries_key(field_id))
         if raw:
             return json.loads(raw)
@@ -62,7 +62,7 @@ class RedisCacheService(AbstractCacheService):
             self._serialize(data),
         )
 
-    async def get_tiles(self, field_id: str) -> Optional[str]:
+    async def get_tiles(self, field_id: str) -> str | None:
         return await self._redis.get(self._tiles_key(field_id))
 
     async def set_tiles(self, field_id: str, tile_url: str) -> None:
@@ -72,7 +72,7 @@ class RedisCacheService(AbstractCacheService):
             tile_url,
         )
 
-    async def get_thumbnail(self, field_id: str) -> Optional[str]:
+    async def get_thumbnail(self, field_id: str) -> str | None:
         return await self._redis.get(self._thumbnail_key(field_id))
 
     async def set_thumbnail(self, field_id: str, thumbnail_url: str) -> None:
@@ -82,7 +82,7 @@ class RedisCacheService(AbstractCacheService):
             thumbnail_url,
         )
 
-    async def get_analysis(self, analysis_id: str) -> Optional[dict]:
+    async def get_analysis(self, analysis_id: str) -> dict | None:
         raw = await self._redis.get(self._analysis_key(analysis_id))
         if raw:
             return json.loads(raw)

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from src.domain.entities.agronomic_alert import AgronomicAlert
 from src.domain.entities.vegetation_metrics import VegetationMetrics
@@ -22,7 +21,7 @@ class AlertDetectionService:
         analysis_id: str,
         current_metrics: VegetationMetrics,
         cloud_coverage: float,
-        previous_metrics: Optional[VegetationMetrics] = None,
+        previous_metrics: VegetationMetrics | None = None,
     ) -> list[AgronomicAlert]:
         alerts: list[AgronomicAlert] = []
 

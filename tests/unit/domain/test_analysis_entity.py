@@ -1,4 +1,3 @@
-import pytest
 
 from src.domain.entities.analysis import Analysis
 from src.domain.value_objects.analysis_status import AnalysisStatus

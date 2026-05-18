@@ -1,7 +1,6 @@
-from dataclasses import dataclass
 
 
-class DomainException(Exception):
+class DomainException(Exception):  # noqa: N818
     """Base domain exception."""
 
     def __init__(self, message: str, code: str = "DOMAIN_ERROR") -> None:

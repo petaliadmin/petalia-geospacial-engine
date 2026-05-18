@@ -1,7 +1,6 @@
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
-import uuid
 
 from src.shared.utils import utcnow
 
@@ -13,7 +12,7 @@ class SatelliteObservation:
     acquisition_date: datetime
     cloud_coverage: float
     image_source: str
-    scene_id: Optional[str] = None
+    scene_id: str | None = None
     created_at: datetime = field(default_factory=utcnow)
 
     @classmethod
@@ -23,7 +22,7 @@ class SatelliteObservation:
         acquisition_date: datetime,
         cloud_coverage: float,
         image_source: str,
-        scene_id: Optional[str] = None,
+        scene_id: str | None = None,
     ) -> "SatelliteObservation":
         return cls(
             id=str(uuid.uuid4()),

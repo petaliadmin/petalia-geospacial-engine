@@ -3,20 +3,19 @@ import structlog
 from src.application.dto.analysis_dto import (
     AlertDTO,
     FieldAnalysisDTO,
-    VisualizationDTO,
     VegetationDTO,
+    VisualizationDTO,
     WaterDTO,
 )
+from src.application.ports.cache_port import AbstractCacheService
 from src.application.queries.get_field_latest_query import GetFieldLatestQuery
 from src.domain.repositories.alert_repository import AbstractAlertRepository
 from src.domain.repositories.analysis_repository import AbstractAnalysisRepository
 from src.domain.repositories.field_repository import AbstractFieldRepository
 from src.domain.repositories.metrics_repository import AbstractMetricsRepository
 from src.domain.repositories.observation_repository import AbstractObservationRepository
-from src.application.ports.cache_port import AbstractCacheService
 from src.shared.config import get_settings
 from src.shared.exceptions import FieldNotFoundException
-from src.shared.utils import is_within_hours
 
 logger = structlog.get_logger(__name__)
 

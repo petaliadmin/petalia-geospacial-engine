@@ -1,4 +1,3 @@
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +12,7 @@ class SQLMetricsRepository(AbstractMetricsRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_by_analysis_id(self, analysis_id: str) -> Optional[VegetationMetrics]:
+    async def get_by_analysis_id(self, analysis_id: str) -> VegetationMetrics | None:
         result = await self._session.execute(
             select(VegetationMetricsModel).where(
                 VegetationMetricsModel.analysis_id == analysis_id

@@ -6,17 +6,17 @@ import structlog
 from src.application.dto.analysis_dto import (
     AlertDTO,
     FieldAnalysisDTO,
-    VisualizationDTO,
     VegetationDTO,
+    VisualizationDTO,
     WaterDTO,
 )
+from src.application.ports.cache_port import AbstractCacheService
 from src.application.queries.get_analysis_query import GetAnalysisQuery
 from src.domain.repositories.alert_repository import AbstractAlertRepository
 from src.domain.repositories.analysis_repository import AbstractAnalysisRepository
 from src.domain.repositories.field_repository import AbstractFieldRepository
 from src.domain.repositories.metrics_repository import AbstractMetricsRepository
 from src.domain.repositories.observation_repository import AbstractObservationRepository
-from src.application.ports.cache_port import AbstractCacheService
 from src.domain.value_objects.alert_severity import AlertSeverity
 from src.domain.value_objects.alert_type import AlertType
 from src.domain.value_objects.analysis_status import AnalysisStatus

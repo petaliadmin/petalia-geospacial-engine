@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -7,8 +11,11 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from src.shared.config import get_settings
 
+if TYPE_CHECKING:
+    from fastapi import FastAPI
 
-def configure_tracing(app: "FastAPI") -> None:  # type: ignore[name-defined]
+
+def configure_tracing(app: FastAPI) -> None:
     settings = get_settings()
 
     if not settings.otlp_endpoint:

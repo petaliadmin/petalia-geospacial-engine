@@ -3,14 +3,9 @@ from typing import Any
 
 import structlog
 from celery.exceptions import MaxRetriesExceededError
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.domain.entities.satellite_observation import SatelliteObservation
 from src.domain.entities.vegetation_metrics import VegetationMetrics
-from src.domain.repositories.alert_repository import AbstractAlertRepository
-from src.domain.repositories.analysis_repository import AbstractAnalysisRepository
-from src.domain.repositories.metrics_repository import AbstractMetricsRepository
-from src.domain.repositories.observation_repository import AbstractObservationRepository
 from src.domain.services.alert_detection_service import AlertDetectionService
 from src.domain.value_objects.requested_metrics import RequestedMetric
 from src.infrastructure.cache.cache_service import RedisCacheService

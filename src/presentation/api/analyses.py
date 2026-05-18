@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from src.application.commands.create_analysis_command import CreateAnalysisCommand
 from src.application.dto.analysis_dto import FieldAnalysisDTO
@@ -12,17 +10,17 @@ from src.presentation.api.dependencies import (
 )
 from src.presentation.middlewares.auth_middleware import get_current_user
 from src.presentation.schemas.analysis_schemas import (
+    AlertResponse,
     AnalysisDetailResponse,
     CreateAnalysisRequest,
     CreateAnalysisResponse,
-    AlertResponse,
     VegetationResponse,
-    WaterResponse,
     VisualizationResponse,
+    WaterResponse,
 )
 from src.shared.exceptions import (
-    AnalysisNotFoundException,
     AnalysisAlreadyRunningException,
+    AnalysisNotFoundException,
     InvalidGeometryException,
 )
 
@@ -47,16 +45,16 @@ async def create_analysis(
     try:
         result = await use_case.execute(
             CreateAnalysisCommand(
-                field_id=payload.fieldId,
+                field_id=payload.fieldId,  # noqa: N815
                 geometry=payload.geometry,
-                requested_metrics=payload.requestedMetrics,
+                requested_metrics=payload.requestedMetrics,  # noqa: N815
             )
         )
         return CreateAnalysisResponse(
-            analysisId=result.analysis_id,
+            analysisId=result.analysis_id,  # noqa: N815
             status=result.status,
-            fieldId=result.field_id,
-            createdAt=result.created_at,
+            fieldId=result.field_id,  # noqa: N815
+            createdAt=result.created_at,  # noqa: N815
         )
     except InvalidGeometryException as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.message)
@@ -65,17 +63,17 @@ async def create_analysis(
 
 
 @router.get(
-    "/{analysisId}",
+    "/{analysis_id}",
     response_model=AnalysisDetailResponse,
     summary="Get analysis results by ID",
 )
 async def get_analysis(
-    analysisId: str,
+    analysis_id: str,
     use_case: GetAnalysisUseCase = Depends(get_get_analysis_use_case),
     _user: dict = Depends(get_current_user),
 ) -> AnalysisDetailResponse:
     try:
-        dto = await use_case.execute(GetAnalysisQuery(analysis_id=analysisId))
+        dto = await use_case.execute(GetAnalysisQuery(analysis_id=analysis_id))
         return _dto_to_detail_response(dto)
     except AnalysisNotFoundException as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message)
@@ -83,32 +81,32 @@ async def get_analysis(
 
 def _dto_to_detail_response(dto: FieldAnalysisDTO) -> AnalysisDetailResponse:
     return AnalysisDetailResponse(
-        fieldId=dto.field_id,
-        analysisId=dto.analysis_id,
-        analysisDate=dto.analysis_date,
+        fieldId=dto.field_id,  # noqa: N815
+        analysisId=dto.analysis_id,  # noqa: N815
+        analysisDate=dto.analysis_date,  # noqa: N815
         status=dto.status,
         vegetation=VegetationResponse(
-            meanNdvi=dto.vegetation.mean_ndvi,
-            minNdvi=dto.vegetation.min_ndvi,
-            maxNdvi=dto.vegetation.max_ndvi,
-            stdNdvi=dto.vegetation.std_ndvi,
+            meanNdvi=dto.vegetation.mean_ndvi,  # noqa: N815
+            minNdvi=dto.vegetation.min_ndvi,  # noqa: N815
+            maxNdvi=dto.vegetation.max_ndvi,  # noqa: N815
+            stdNdvi=dto.vegetation.std_ndvi,  # noqa: N815
             trend=dto.vegetation.trend,
             health=dto.vegetation.health,
         ) if dto.vegetation else None,
-        water=WaterResponse(meanNdwi=dto.water.mean_ndwi) if dto.water else None,
+        water=WaterResponse(meanNdwi=dto.water.mean_ndwi) if dto.water else None,  # noqa: N815
         alerts=[
             AlertResponse(
                 id=a.id,
                 severity=a.severity,
-                alertType=a.alert_type,
+                alertType=a.alert_type,  # noqa: N815
                 message=a.message,
-                createdAt=a.created_at,
+                createdAt=a.created_at,  # noqa: N815
             )
             for a in dto.alerts
         ],
         visualization=VisualizationResponse(
-            tileUrl=dto.visualization.tile_url,
-            thumbnailUrl=dto.visualization.thumbnail_url,
+            tileUrl=dto.visualization.tile_url,  # noqa: N815
+            thumbnailUrl=dto.visualization.thumbnail_url,  # noqa: N815
         ) if dto.visualization else None,
-        cloudCoverage=dto.cloud_coverage,
+        cloudCoverage=dto.cloud_coverage,  # noqa: N815
     )

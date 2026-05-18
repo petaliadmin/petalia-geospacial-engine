@@ -11,7 +11,6 @@ from src.application.use_cases import (
     GetFieldLatestUseCase,
     GetFieldTimeseriesUseCase,
 )
-from src.domain.services.alert_detection_service import AlertDetectionService
 from src.domain.services.analysis_domain_service import AnalysisDomainService
 from src.infrastructure.cache.cache_service import RedisCacheService
 from src.infrastructure.cache.redis_client import get_redis

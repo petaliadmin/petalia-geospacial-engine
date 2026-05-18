@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.cache.redis_client import get_redis
 from src.infrastructure.database.connection import get_db_session

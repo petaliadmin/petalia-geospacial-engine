@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Any
 
-from src.domain.value_objects.analysis_status import AnalysisStatus
 from src.domain.value_objects.alert_severity import AlertSeverity
 from src.domain.value_objects.alert_type import AlertType
-from src.domain.value_objects.vegetation_trend import VegetationTrend
+from src.domain.value_objects.analysis_status import AnalysisStatus
 from src.domain.value_objects.vegetation_health import VegetationHealth
+from src.domain.value_objects.vegetation_trend import VegetationTrend
 
 
 @dataclass
@@ -34,8 +33,8 @@ class WaterDTO:
 
 @dataclass
 class VisualizationDTO:
-    tile_url: Optional[str]
-    thumbnail_url: Optional[str]
+    tile_url: str | None
+    thumbnail_url: str | None
 
 
 @dataclass
@@ -53,11 +52,11 @@ class FieldAnalysisDTO:
     analysis_id: str
     analysis_date: datetime
     status: AnalysisStatus
-    vegetation: Optional[VegetationDTO]
-    water: Optional[WaterDTO]
+    vegetation: VegetationDTO | None
+    water: WaterDTO | None
     alerts: list[AlertDTO]
-    visualization: Optional[VisualizationDTO]
-    cloud_coverage: Optional[float]
+    visualization: VisualizationDTO | None
+    cloud_coverage: float | None
 
 
 @dataclass
@@ -66,7 +65,7 @@ class TimeseriesEntryDTO:
     analysis_date: datetime
     ndvi_mean: float
     ndwi_mean: float
-    cloud_coverage: Optional[float]
+    cloud_coverage: float | None
     trend: VegetationTrend
     health: VegetationHealth
 

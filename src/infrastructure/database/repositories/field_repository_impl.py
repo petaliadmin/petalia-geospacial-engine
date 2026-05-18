@@ -1,4 +1,3 @@
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,14 +11,14 @@ class SQLFieldRepository(AbstractFieldRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_by_id(self, field_id: str) -> Optional[Field]:
+    async def get_by_id(self, field_id: str) -> Field | None:
         result = await self._session.execute(
             select(FieldModel).where(FieldModel.id == field_id)
         )
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
-    async def get_by_external_id(self, external_id: str) -> Optional[Field]:
+    async def get_by_external_id(self, external_id: str) -> Field | None:
         result = await self._session.execute(
             select(FieldModel).where(FieldModel.external_id == external_id)
         )

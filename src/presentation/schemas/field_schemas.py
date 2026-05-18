@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,28 +7,28 @@ from src.domain.value_objects.vegetation_trend import VegetationTrend
 
 
 class TimeseriesEntryResponse(BaseModel):
-    analysisId: str
-    analysisDate: datetime
-    ndviMean: float
-    ndwiMean: float
-    cloudCoverage: Optional[float] = None
+    analysisId: str  # noqa: N815
+    analysisDate: datetime  # noqa: N815
+    ndviMean: float  # noqa: N815
+    ndwiMean: float  # noqa: N815
+    cloudCoverage: float | None = None  # noqa: N815
     trend: VegetationTrend
     health: VegetationHealth
 
 
 class FieldTimeseriesResponse(BaseModel):
-    fieldId: str
+    fieldId: str  # noqa: N815
     total: int
     entries: list[TimeseriesEntryResponse]
 
 
 class TileInfoResponse(BaseModel):
-    fieldId: str
-    tileUrl: Optional[str] = None
-    thumbnailUrl: Optional[str] = None
+    fieldId: str  # noqa: N815
+    tileUrl: str | None = None  # noqa: N815
+    thumbnailUrl: str | None = None  # noqa: N815
 
 
 class AlertListResponse(BaseModel):
-    fieldId: str
+    fieldId: str  # noqa: N815
     total: int
     alerts: list[dict]

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +11,7 @@ class SQLObservationRepository(AbstractObservationRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_by_analysis_id(self, analysis_id: str) -> Optional[SatelliteObservation]:
+    async def get_by_analysis_id(self, analysis_id: str) -> SatelliteObservation | None:
         result = await self._session.execute(
             select(SatelliteObservationModel).where(
                 SatelliteObservationModel.analysis_id == analysis_id

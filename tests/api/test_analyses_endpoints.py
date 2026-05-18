@@ -1,5 +1,7 @@
-import pytest
+from datetime import UTC
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from src.domain.value_objects.analysis_status import AnalysisStatus
 
@@ -23,14 +25,15 @@ async def test_create_analysis_returns_202(async_client, api_key_headers):
         "src.application.use_cases.create_analysis_use_case.CreateAnalysisUseCase.execute",
         new_callable=AsyncMock,
     ) as mock_exec:
+        from datetime import datetime
+
         from src.application.dto.analysis_dto import AnalysisStatusDTO
-        from datetime import datetime, timezone
 
         mock_exec.return_value = AnalysisStatusDTO(
             analysis_id="ana_test123",
             status=AnalysisStatus.PENDING,
             field_id="field_001",
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
 
         response = await async_client.post(

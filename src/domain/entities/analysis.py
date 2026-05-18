@@ -1,7 +1,6 @@
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
-import uuid
 
 from src.domain.value_objects.analysis_status import AnalysisStatus
 from src.domain.value_objects.requested_metrics import RequestedMetric
@@ -16,8 +15,8 @@ class Analysis:
     requested_metrics: list[RequestedMetric]
     algorithm_version: str
     created_at: datetime = field(default_factory=utcnow)
-    completed_at: Optional[datetime] = None
-    error_message: Optional[str] = None
+    completed_at: datetime | None = None
+    error_message: str | None = None
 
     @classmethod
     def create(

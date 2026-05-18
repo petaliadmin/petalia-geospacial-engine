@@ -1,7 +1,5 @@
-import pytest
 
 from src.domain.entities.field import Field
-
 
 GEOMETRY = {
     "type": "Polygon",

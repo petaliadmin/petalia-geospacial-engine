@@ -1,10 +1,9 @@
 import pytest
-import pytest_asyncio
 
 from src.domain.entities.analysis import Analysis
 from src.domain.entities.field import Field
 from src.domain.value_objects.requested_metrics import RequestedMetric
-from src.infrastructure.database.repositories import SQLFieldRepository, SQLAnalysisRepository
+from src.infrastructure.database.repositories import SQLAnalysisRepository, SQLFieldRepository
 
 GEOMETRY = {
     "type": "Polygon",

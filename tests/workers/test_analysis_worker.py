@@ -1,8 +1,9 @@
-import pytest
+from datetime import UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 from src.domain.entities.analysis import Analysis
-from src.domain.value_objects.analysis_status import AnalysisStatus
 from src.domain.value_objects.requested_metrics import RequestedMetric
 
 GEOMETRY = {
@@ -27,7 +28,7 @@ class MockIndexResult:
 class MockFetchResult:
     from datetime import datetime, timezone
     image = MagicMock()
-    acquisition_date = datetime(2026, 5, 17, tzinfo=timezone.utc)
+    acquisition_date = datetime(2026, 5, 17, tzinfo=UTC)
     cloud_coverage = 0.12
     scene_count = 5
     image_source = "COPERNICUS/S2_SR_HARMONIZED"
@@ -41,16 +42,18 @@ class MockTileResult:
 @pytest.mark.asyncio
 async def test_pipeline_marks_analysis_completed():
     """Test that the pipeline correctly orchestrates all steps and marks analysis completed."""
-    analysis = Analysis.create("field-uuid", [RequestedMetric.NDVI, RequestedMetric.TILES, RequestedMetric.ALERTS])
+    analysis = Analysis.create(
+        "field-uuid", [RequestedMetric.NDVI, RequestedMetric.TILES, RequestedMetric.ALERTS]
+    )
     analysis_id = analysis.id
 
     with (
         patch("src.infrastructure.workers.analysis_worker.get_session_factory") as mock_sf,
         patch("src.infrastructure.workers.analysis_worker.initialize_earth_engine"),
-        patch("src.infrastructure.workers.analysis_worker.SentinelImageFetcher") as MockFetcher,
-        patch("src.infrastructure.workers.analysis_worker.IndexCalculator") as MockCalc,
+        patch("src.infrastructure.workers.analysis_worker.SentinelImageFetcher") as mock_fetcher,
+        patch("src.infrastructure.workers.analysis_worker.IndexCalculator") as mock_calc,
         patch("src.infrastructure.workers.analysis_worker.get_redis", new_callable=AsyncMock),
-        patch("src.infrastructure.workers.analysis_worker.AlertDetectionService") as MockAlerts,
+        patch("src.infrastructure.workers.analysis_worker.AlertDetectionService") as mock_alerts,
     ):
         mock_session = AsyncMock()
         mock_sf.return_value = MagicMock()
@@ -66,16 +69,17 @@ async def test_pipeline_marks_analysis_completed():
         mock_metrics_repo.get_timeseries_for_field.return_value = []
         mock_alert_repo = AsyncMock()
 
+        worker = "src.infrastructure.workers.analysis_worker"
         with (
-            patch("src.infrastructure.workers.analysis_worker.SQLAnalysisRepository", return_value=mock_analysis_repo),
-            patch("src.infrastructure.workers.analysis_worker.SQLObservationRepository", return_value=mock_obs_repo),
-            patch("src.infrastructure.workers.analysis_worker.SQLMetricsRepository", return_value=mock_metrics_repo),
-            patch("src.infrastructure.workers.analysis_worker.SQLAlertRepository", return_value=mock_alert_repo),
+            patch(f"{worker}.SQLAnalysisRepository", return_value=mock_analysis_repo),
+            patch(f"{worker}.SQLObservationRepository", return_value=mock_obs_repo),
+            patch(f"{worker}.SQLMetricsRepository", return_value=mock_metrics_repo),
+            patch(f"{worker}.SQLAlertRepository", return_value=mock_alert_repo),
         ):
-            MockFetcher.return_value.fetch.return_value = MockFetchResult()
-            MockCalc.return_value.compute.return_value = MockIndexResult()
-            MockCalc.return_value.generate_tiles.return_value = MockTileResult()
-            MockAlerts.return_value.detect.return_value = []
+            mock_fetcher.return_value.fetch.return_value = MockFetchResult()
+            mock_calc.return_value.compute.return_value = MockIndexResult()
+            mock_calc.return_value.generate_tiles.return_value = MockTileResult()
+            mock_alerts.return_value.detect.return_value = []
 
             from src.infrastructure.workers.analysis_worker import _execute_pipeline
             result = await _execute_pipeline(
@@ -97,7 +101,7 @@ async def test_pipeline_marks_failed_on_error():
     with (
         patch("src.infrastructure.workers.analysis_worker.get_session_factory") as mock_sf,
         patch("src.infrastructure.workers.analysis_worker.initialize_earth_engine"),
-        patch("src.infrastructure.workers.analysis_worker.SentinelImageFetcher") as MockFetcher,
+        patch("src.infrastructure.workers.analysis_worker.SentinelImageFetcher") as mock_fetcher,
     ):
         mock_session = AsyncMock()
         mock_sf.return_value = MagicMock()
@@ -108,8 +112,9 @@ async def test_pipeline_marks_failed_on_error():
         mock_analysis_repo.get_by_id.return_value = analysis
         mock_analysis_repo.update.side_effect = lambda a: a
 
-        with patch("src.infrastructure.workers.analysis_worker.SQLAnalysisRepository", return_value=mock_analysis_repo):
-            MockFetcher.return_value.fetch.side_effect = RuntimeError("GEE is down")
+        worker = "src.infrastructure.workers.analysis_worker"
+        with patch(f"{worker}.SQLAnalysisRepository", return_value=mock_analysis_repo):
+            mock_fetcher.return_value.fetch.side_effect = RuntimeError("GEE is down")
 
             from src.infrastructure.workers.analysis_worker import _execute_pipeline
             with pytest.raises(RuntimeError):

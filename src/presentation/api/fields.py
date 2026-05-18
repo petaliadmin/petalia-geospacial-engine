@@ -10,24 +10,20 @@ from src.application.use_cases import (
     GetFieldLatestUseCase,
     GetFieldTimeseriesUseCase,
 )
-from src.infrastructure.cache.cache_service import RedisCacheService
+from src.presentation.api.analyses import _dto_to_detail_response
 from src.presentation.api.dependencies import (
     CacheDep,
     get_field_alerts_use_case,
     get_field_latest_use_case,
     get_field_timeseries_use_case,
 )
-from src.presentation.api.analyses import _dto_to_detail_response
 from src.presentation.middlewares.auth_middleware import get_current_user
-from src.presentation.schemas.analysis_schemas import (
-    AlertResponse,
-    AnalysisDetailResponse,
-)
+from src.presentation.schemas.analysis_schemas import AnalysisDetailResponse
 from src.presentation.schemas.field_schemas import (
     AlertListResponse,
     FieldTimeseriesResponse,
-    TimeseriesEntryResponse,
     TileInfoResponse,
+    TimeseriesEntryResponse,
 )
 from src.shared.exceptions import FieldNotFoundException
 
@@ -35,45 +31,45 @@ router = APIRouter(prefix="/v1/fields", tags=["Fields"])
 
 
 @router.get(
-    "/{fieldId}/latest",
+    "/{field_id}/latest",
     response_model=AnalysisDetailResponse,
     summary="Get latest completed analysis for a field",
 )
 async def get_field_latest(
-    fieldId: str,
+    field_id: str,
     use_case: GetFieldLatestUseCase = Depends(get_field_latest_use_case),
     _user: dict = Depends(get_current_user),
 ) -> AnalysisDetailResponse:
     try:
-        dto = await use_case.execute(GetFieldLatestQuery(field_id=fieldId))
+        dto = await use_case.execute(GetFieldLatestQuery(field_id=field_id))
         return _dto_to_detail_response(dto)
     except FieldNotFoundException as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message)
 
 
 @router.get(
-    "/{fieldId}/timeseries",
+    "/{field_id}/timeseries",
     response_model=FieldTimeseriesResponse,
     summary="Get NDVI/NDWI timeseries for a field",
 )
 async def get_field_timeseries(
-    fieldId: str,
+    field_id: str,
     limit: int = 30,
     use_case: GetFieldTimeseriesUseCase = Depends(get_field_timeseries_use_case),
     _user: dict = Depends(get_current_user),
 ) -> FieldTimeseriesResponse:
     try:
-        dto = await use_case.execute(GetFieldTimeseriesQuery(field_id=fieldId, limit=limit))
+        dto = await use_case.execute(GetFieldTimeseriesQuery(field_id=field_id, limit=limit))
         return FieldTimeseriesResponse(
-            fieldId=dto.field_id,
+            fieldId=dto.field_id,  # noqa: N815
             total=dto.total,
             entries=[
                 TimeseriesEntryResponse(
-                    analysisId=e.analysis_id,
-                    analysisDate=e.analysis_date,
-                    ndviMean=e.ndvi_mean,
-                    ndwiMean=e.ndwi_mean,
-                    cloudCoverage=e.cloud_coverage,
+                    analysisId=e.analysis_id,  # noqa: N815
+                    analysisDate=e.analysis_date,  # noqa: N815
+                    ndviMean=e.ndvi_mean,  # noqa: N815
+                    ndwiMean=e.ndwi_mean,  # noqa: N815
+                    cloudCoverage=e.cloud_coverage,  # noqa: N815
                     trend=e.trend,
                     health=e.health,
                 )
@@ -85,55 +81,55 @@ async def get_field_timeseries(
 
 
 @router.get(
-    "/{fieldId}/tiles",
+    "/{field_id}/tiles",
     response_model=TileInfoResponse,
     summary="Get tile map URL for a field",
 )
 async def get_field_tiles(
-    fieldId: str,
+    field_id: str,
     cache: CacheDep,
     _user: dict = Depends(get_current_user),
 ) -> TileInfoResponse:
-    tile_url = await cache.get_tiles(fieldId)
-    thumbnail_url = await cache.get_thumbnail(fieldId)
+    tile_url = await cache.get_tiles(field_id)
+    thumbnail_url = await cache.get_thumbnail(field_id)
     if not tile_url and not thumbnail_url:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No tiles available for field '{fieldId}'. Run an analysis first.",
+            detail=f"No tiles available for field '{field_id}'. Run an analysis first.",
         )
     return TileInfoResponse(
-        fieldId=fieldId,
-        tileUrl=tile_url,
-        thumbnailUrl=thumbnail_url,
+        fieldId=field_id,  # noqa: N815
+        tileUrl=tile_url,  # noqa: N815
+        thumbnailUrl=thumbnail_url,  # noqa: N815
     )
 
 
 @router.get(
-    "/{fieldId}/thumbnail",
+    "/{field_id}/thumbnail",
     response_model=TileInfoResponse,
     summary="Get thumbnail PNG URL for a field",
 )
 async def get_field_thumbnail(
-    fieldId: str,
+    field_id: str,
     cache: CacheDep,
     _user: dict = Depends(get_current_user),
 ) -> TileInfoResponse:
-    thumbnail_url = await cache.get_thumbnail(fieldId)
+    thumbnail_url = await cache.get_thumbnail(field_id)
     if not thumbnail_url:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No thumbnail available for field '{fieldId}'. Run an analysis first.",
+            detail=f"No thumbnail available for field '{field_id}'. Run an analysis first.",
         )
-    return TileInfoResponse(fieldId=fieldId, thumbnailUrl=thumbnail_url)
+    return TileInfoResponse(fieldId=field_id, thumbnailUrl=thumbnail_url)  # noqa: N815
 
 
 @router.get(
-    "/{fieldId}/alerts",
+    "/{field_id}/alerts",
     response_model=AlertListResponse,
     summary="Get agronomic alerts for a field",
 )
 async def get_field_alerts(
-    fieldId: str,
+    field_id: str,
     limit: int = 50,
     offset: int = 0,
     use_case: GetFieldAlertsUseCase = Depends(get_field_alerts_use_case),
@@ -141,10 +137,10 @@ async def get_field_alerts(
 ) -> AlertListResponse:
     try:
         alerts = await use_case.execute(
-            GetFieldAlertsQuery(field_id=fieldId, limit=limit, offset=offset)
+            GetFieldAlertsQuery(field_id=field_id, limit=limit, offset=offset)
         )
         return AlertListResponse(
-            fieldId=fieldId,
+            fieldId=field_id,  # noqa: N815
             total=len(alerts),
             alerts=[
                 {

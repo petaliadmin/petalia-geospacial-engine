@@ -1,6 +1,6 @@
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-import uuid
 
 from src.domain.value_objects.alert_severity import AlertSeverity
 from src.domain.value_objects.alert_type import AlertType

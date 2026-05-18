@@ -1,4 +1,3 @@
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,14 +13,14 @@ class SQLAnalysisRepository(AbstractAnalysisRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_by_id(self, analysis_id: str) -> Optional[Analysis]:
+    async def get_by_id(self, analysis_id: str) -> Analysis | None:
         result = await self._session.execute(
             select(AnalysisModel).where(AnalysisModel.id == analysis_id)
         )
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
-    async def get_latest_for_field(self, field_id: str) -> Optional[Analysis]:
+    async def get_latest_for_field(self, field_id: str) -> Analysis | None:
         result = await self._session.execute(
             select(AnalysisModel)
             .where(
@@ -49,7 +48,7 @@ class SQLAnalysisRepository(AbstractAnalysisRepository):
         )
         return [self._to_entity(m) for m in result.scalars().all()]
 
-    async def get_running_for_field(self, field_id: str) -> Optional[Analysis]:
+    async def get_running_for_field(self, field_id: str) -> Analysis | None:
         result = await self._session.execute(
             select(AnalysisModel)
             .where(

@@ -1,10 +1,9 @@
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
-import uuid
 
-from src.domain.value_objects.vegetation_trend import VegetationTrend
 from src.domain.value_objects.vegetation_health import VegetationHealth
+from src.domain.value_objects.vegetation_trend import VegetationTrend
 from src.shared.utils import utcnow
 
 

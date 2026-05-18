@@ -1,14 +1,14 @@
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 
 def utcnow() -> datetime:
-    return datetime.now(tz=timezone.utc)
+    return datetime.now(tz=UTC)
 
 
 def is_within_hours(dt: datetime, hours: int) -> bool:
     """Return True if dt is within the last `hours` hours from now."""
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return utcnow() - dt < timedelta(hours=hours)
 
 

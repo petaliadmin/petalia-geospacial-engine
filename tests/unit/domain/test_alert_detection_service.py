@@ -1,5 +1,5 @@
+
 import pytest
-from unittest.mock import patch
 
 from src.domain.entities.vegetation_metrics import VegetationMetrics
 from src.domain.services.alert_detection_service import AlertDetectionService
@@ -59,15 +59,19 @@ def test_cloud_cover_alert(service):
 def test_ndvi_drop_alert(service):
     current = _make_metrics(0.40, "ana_002")
     previous = _make_metrics(0.70, "ana_001")
-    alerts = service.detect("field_1", "ana_002", current, cloud_coverage=0.10, previous_metrics=previous)
+    alerts = service.detect(
+        "field_1", "ana_002", current, cloud_coverage=0.10, previous_metrics=previous
+    )
     drop_alerts = [a for a in alerts if a.alert_type == AlertType.NDVI_DROP]
     assert len(drop_alerts) == 1
-    assert drop_alerts[0].severity in (AlertSeverity.MEDIUM, AlertSeverity.HIGH, AlertSeverity.CRITICAL)
+    assert drop_alerts[0].severity in (AlertSeverity.MEDIUM, AlertSeverity.HIGH, AlertSeverity.CRITICAL)  # noqa: E501
 
 
 def test_no_drop_alert_when_ndvi_improves(service):
     current = _make_metrics(0.70, "ana_002")
     previous = _make_metrics(0.40, "ana_001")
-    alerts = service.detect("field_1", "ana_002", current, cloud_coverage=0.10, previous_metrics=previous)
+    alerts = service.detect(
+        "field_1", "ana_002", current, cloud_coverage=0.10, previous_metrics=previous
+    )
     drop_alerts = [a for a in alerts if a.alert_type == AlertType.NDVI_DROP]
     assert drop_alerts == []

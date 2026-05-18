@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -12,9 +12,9 @@ from src.domain.value_objects.vegetation_trend import VegetationTrend
 
 
 class CreateAnalysisRequest(BaseModel):
-    fieldId: str = Field(..., min_length=1, max_length=255, description="External field identifier")
+    fieldId: str = Field(..., min_length=1, max_length=255, description="External field identifier")  # noqa: N815
     geometry: dict[str, Any] = Field(..., description="GeoJSON geometry of the field")
-    requestedMetrics: list[RequestedMetric] = Field(
+    requestedMetrics: list[RequestedMetric] = Field(  # noqa: N815
         default=[
             RequestedMetric.NDVI,
             RequestedMetric.NDWI,
@@ -34,47 +34,47 @@ class CreateAnalysisRequest(BaseModel):
 
 
 class CreateAnalysisResponse(BaseModel):
-    analysisId: str
+    analysisId: str  # noqa: N815
     status: AnalysisStatus
-    fieldId: str
-    createdAt: datetime
+    fieldId: str  # noqa: N815
+    createdAt: datetime  # noqa: N815
 
     model_config = {"from_attributes": True}
 
 
 class VegetationResponse(BaseModel):
-    meanNdvi: float
-    minNdvi: float
-    maxNdvi: float
-    stdNdvi: float
+    meanNdvi: float  # noqa: N815
+    minNdvi: float  # noqa: N815
+    maxNdvi: float  # noqa: N815
+    stdNdvi: float  # noqa: N815
     trend: VegetationTrend
     health: VegetationHealth
 
 
 class WaterResponse(BaseModel):
-    meanNdwi: float
+    meanNdwi: float  # noqa: N815
 
 
 class VisualizationResponse(BaseModel):
-    tileUrl: Optional[str]
-    thumbnailUrl: Optional[str]
+    tileUrl: str | None  # noqa: N815
+    thumbnailUrl: str | None  # noqa: N815
 
 
 class AlertResponse(BaseModel):
     id: str
     severity: AlertSeverity
-    alertType: AlertType
+    alertType: AlertType  # noqa: N815
     message: str
-    createdAt: datetime
+    createdAt: datetime  # noqa: N815
 
 
 class AnalysisDetailResponse(BaseModel):
-    fieldId: str
-    analysisId: str
-    analysisDate: datetime
+    fieldId: str  # noqa: N815
+    analysisId: str  # noqa: N815
+    analysisDate: datetime  # noqa: N815
     status: AnalysisStatus
-    vegetation: Optional[VegetationResponse] = None
-    water: Optional[WaterResponse] = None
+    vegetation: VegetationResponse | None = None
+    water: WaterResponse | None = None
     alerts: list[AlertResponse] = []
-    visualization: Optional[VisualizationResponse] = None
-    cloudCoverage: Optional[float] = None
+    visualization: VisualizationResponse | None = None
+    cloudCoverage: float | None = None  # noqa: N815
