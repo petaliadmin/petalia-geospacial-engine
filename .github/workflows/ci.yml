@@ -182,13 +182,62 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy docker-compose.prod.yml to EC2
+      - name: Ensure Docker is installed on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            if command -v docker &>/dev/null; then
+              echo "==> Docker already installed: $(docker --version)"
+              sudo systemctl start docker 2>/dev/null || true
+            else
+              echo "==> Installing Docker"
+              if command -v apt-get &>/dev/null; then
+                sudo apt-get update -y -qq
+                sudo apt-get install -y -qq ca-certificates curl gnupg
+                sudo install -m 0755 -d /etc/apt/keyrings
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+                  | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+                echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+                  https://download.docker.com/linux/ubuntu \
+                  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+                  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+                sudo apt-get update -y -qq
+                sudo apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-compose-plugin
+              else
+                # Amazon Linux 2023
+                sudo dnf install -y docker docker-compose-plugin
+              fi
+              sudo systemctl enable --now docker
+              sudo usermod -aG docker "$USER" || true
+              echo "==> Docker installed: $(docker --version)"
+            fi
+
+            # Ensure compose plugin is available (idempotent)
+            if ! docker compose version &>/dev/null; then
+              echo "==> Installing docker-compose-plugin"
+              if command -v apt-get &>/dev/null; then
+                sudo apt-get install -y -qq docker-compose-plugin
+              else
+                sudo dnf install -y docker-compose-plugin
+              fi
+            fi
+
+            sudo mkdir -p /opt/petalia/secrets
+            sudo chmod 700 /opt/petalia/secrets
+            sudo chown "$USER":"$USER" /opt/petalia
+
+      - name: Copy compose file & env to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.prod.yml,.env.production"
+          source: "docker-compose.prod.yml,docker/prometheus.yml"
           target: "/opt/petalia"
           overwrite: true
 
@@ -202,7 +251,6 @@ jobs:
             set -e
             cd /opt/petalia
 
-            # Inject image tag so compose uses the exact SHA just pushed
             export IMAGE_TAG=sha-${{ github.sha }}
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
 
