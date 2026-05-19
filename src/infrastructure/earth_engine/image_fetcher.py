@@ -116,7 +116,9 @@ class SentinelImageFetcher:
         composite = self._build_composite(collection, ee_geometry)
 
         logger.info("gee_getinfo_cloud_coverage", phase="aggregate_mean")
-        mean_cloud = _getinfo_with_timeout(collection.aggregate_mean("CLOUDY_PIXEL_PERCENTAGE")) or 0.0
+        mean_cloud = _getinfo_with_timeout(
+            collection.aggregate_mean("CLOUDY_PIXEL_PERCENTAGE")
+        ) or 0.0
         cloud_fraction = mean_cloud / 100.0
 
         logger.info("gee_getinfo_acquisition_date", phase="latest_date")
