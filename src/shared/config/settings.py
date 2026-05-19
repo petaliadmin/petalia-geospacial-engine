@@ -101,7 +101,7 @@ class Settings(BaseSettings):
 
     # Monitoring
     prometheus_enabled: bool = True
-    otlp_endpoint: str = "http://localhost:4317"
+    otlp_endpoint: str = ""
     log_level: str = "INFO"
     sentry_dsn: str = ""
 
