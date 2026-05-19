@@ -5,6 +5,12 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_only:
+        description: "Skip lint/test and deploy directly"
+        required: false
+        default: "false"
 
 # Cancel in-progress runs on the same branch
 concurrency:
