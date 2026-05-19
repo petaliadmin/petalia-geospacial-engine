@@ -234,8 +234,8 @@ jobs:
             fi
 
             sudo mkdir -p /opt/petalia/secrets
-            sudo chmod 700 /opt/petalia/secrets
-            sudo chown "$USER":"$USER" /opt/petalia
+            sudo chmod 755 /opt/petalia/secrets
+            sudo chown "$USER":"$USER" /opt/petalia /opt/petalia/secrets
 
       - name: Write .env.production on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -249,6 +249,19 @@ jobs:
           script: |
             printf '%s' "$ENV_PRODUCTION" > /opt/petalia/.env.production
             chmod 600 /opt/petalia/.env.production
+
+      - name: Write GEE service account key on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GEE_KEY: ${{ secrets.GEE_SERVICE_ACCOUNT_KEY }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: GEE_KEY
+          script: |
+            printf '%s' "$GEE_KEY" > /opt/petalia/secrets/gee_service_account.json
+            chmod 644 /opt/petalia/secrets/gee_service_account.json
 
       - name: Copy compose file & env to EC2
         uses: appleboy/scp-action@v0.1.7
