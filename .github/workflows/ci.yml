@@ -231,6 +231,19 @@ jobs:
             sudo chmod 700 /opt/petalia/secrets
             sudo chown "$USER":"$USER" /opt/petalia
 
+      - name: Write .env.production on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ENV_PRODUCTION
+          script: |
+            printf '%s' "$ENV_PRODUCTION" > /opt/petalia/.env.production
+            chmod 600 /opt/petalia/.env.production
+
       - name: Copy compose file & env to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
