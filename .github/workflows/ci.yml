@@ -288,10 +288,10 @@ jobs:
             echo "==> Ensuring database and PostGIS extensions exist"
             PG_USER=$(docker exec petalia_postgres printenv POSTGRES_USER)
             PG_DB=$(docker exec petalia_postgres printenv POSTGRES_DB)
-            docker exec petalia_postgres psql -U "$PG_USER" -tc \
+            docker exec petalia_postgres psql -U "$PG_USER" -d postgres -tc \
               "SELECT 1 FROM pg_database WHERE datname = '$PG_DB'" \
               | grep -q 1 || \
-              docker exec petalia_postgres psql -U "$PG_USER" -c "CREATE DATABASE \"$PG_DB\";"
+              docker exec petalia_postgres psql -U "$PG_USER" -d postgres -c "CREATE DATABASE \"$PG_DB\";"
             docker exec petalia_postgres psql -U "$PG_USER" -d "$PG_DB" -c \
               "CREATE EXTENSION IF NOT EXISTS postgis;
                CREATE EXTENSION IF NOT EXISTS postgis_topology;"
