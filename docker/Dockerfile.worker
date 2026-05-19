@@ -22,5 +22,5 @@ RUN addgroup --system petalia && adduser --system --group petalia
 USER petalia
 
 CMD ["celery", "-A", "src.infrastructure.messaging.celery_app", "worker", \
-     "--loglevel=info", "--concurrency=4", "--queues=analysis", \
-     "--hostname=analysis-worker@%h"]
+     "--loglevel=info", "--concurrency=4", "--queues=analysis,export", \
+     "--hostname=worker@%h"]
