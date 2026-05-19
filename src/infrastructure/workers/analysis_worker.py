@@ -202,14 +202,17 @@ async def _execute_pipeline(
             await session.commit()
             log.info("analysis_completed")
 
-        # Update cache
-        redis = await get_redis()
-        cache = RedisCacheService(redis)
-        await cache.invalidate_field(external_field_id)
-        if tile_url:
-            await cache.set_tiles(external_field_id, tile_url)
-        if thumbnail_url:
-            await cache.set_thumbnail(external_field_id, thumbnail_url)
+        # Update cache — non-critical: log and continue if Redis is unavailable
+        try:
+            redis = await get_redis()
+            cache = RedisCacheService(redis)
+            await cache.invalidate_field(external_field_id)
+            if tile_url:
+                await cache.set_tiles(external_field_id, tile_url)
+            if thumbnail_url:
+                await cache.set_thumbnail(external_field_id, thumbnail_url)
+        except Exception as cache_exc:
+            log.warning("cache_update_failed_after_completion", error=str(cache_exc))
 
         # S2-5: Prometheus — record completed status and pipeline duration
         pipeline_duration = time.monotonic() - pipeline_start
@@ -263,11 +266,18 @@ async def _get_previous_metrics(
 
 
 async def _mark_failed(analysis_id: str, error_message: str) -> None:  # pragma: no cover
-    session_factory = get_worker_session_factory()
-    async with session_factory() as session:
-        repo = SQLAnalysisRepository(session)
-        analysis = await repo.get_by_id(analysis_id)
-        if analysis:
+    log = logger.bind(analysis_id=analysis_id)
+    try:
+        session_factory = get_worker_session_factory()
+        async with session_factory() as session:
+            repo = SQLAnalysisRepository(session)
+            analysis = await repo.get_by_id(analysis_id)
+            if analysis is None:
+                log.error("mark_failed_analysis_not_found")
+                return
             analysis.mark_failed(error_message)
             await repo.update(analysis)
             await session.commit()
+            log.info("analysis_marked_failed", reason=error_message)
+    except Exception as exc:
+        log.error("mark_failed_db_error", error=str(exc))

@@ -6,6 +6,7 @@ import ee
 import structlog
 
 from src.infrastructure.earth_engine.client import get_ee_client
+from src.infrastructure.earth_engine.index_calculator import _getinfo_with_timeout
 from src.infrastructure.monitoring.metrics import (
     earth_engine_duration_seconds,
     earth_engine_requests_total,
@@ -79,7 +80,8 @@ class SentinelImageFetcher:
             collection = self._build_collection(
                 ee_geometry, start_date, end_date, with_cloud_filter=True
             )
-            count = collection.size().getInfo()
+            logger.info("gee_getinfo_collection_size", days=days, phase="filtered_window")
+            count = _getinfo_with_timeout(collection.size())
             if count > 0:
                 used_days = days
                 logger.info(
@@ -96,7 +98,8 @@ class SentinelImageFetcher:
             collection = self._build_collection(
                 ee_geometry, start_date, end_date, with_cloud_filter=False
             )
-            count = collection.size().getInfo()
+            logger.info("gee_getinfo_collection_size", days=max_days, phase="fallback_no_cloud")
+            count = _getinfo_with_timeout(collection.size())
             used_days = max_days
             logger.warning(
                 "sentinel_fallback_no_cloud_filter",
@@ -112,15 +115,16 @@ class SentinelImageFetcher:
         # S3-6: Configurable composite method
         composite = self._build_composite(collection, ee_geometry)
 
-        mean_cloud = collection.aggregate_mean("CLOUDY_PIXEL_PERCENTAGE").getInfo() or 0.0
+        logger.info("gee_getinfo_cloud_coverage", phase="aggregate_mean")
+        mean_cloud = _getinfo_with_timeout(collection.aggregate_mean("CLOUDY_PIXEL_PERCENTAGE")) or 0.0
         cloud_fraction = mean_cloud / 100.0
 
-        latest_date_info = (
+        logger.info("gee_getinfo_acquisition_date", phase="latest_date")
+        latest_date_info = _getinfo_with_timeout(
             collection.sort("system:time_start", False)
             .first()
             .date()
             .format("YYYY-MM-dd")
-            .getInfo()
         )
 
         # S1-4: Acquisition date must be timezone-aware (Python 3.11+ requires it)
