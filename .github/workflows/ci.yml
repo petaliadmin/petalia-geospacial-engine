@@ -264,17 +264,27 @@ jobs:
             set -e
             cd /opt/petalia
 
+            # Source env so compose can substitute vars for all services (postgres, redis, etc.)
+            set -a && source /opt/petalia/.env.production && set +a
+
             export IMAGE_TAG=sha-${{ github.sha }}
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
 
             echo "==> Pulling new images"
             docker compose -f docker-compose.prod.yml pull api worker
 
+            echo "==> Starting infrastructure services"
+            docker compose -f docker-compose.prod.yml up -d postgres redis
+
+            echo "==> Waiting for postgres to be healthy"
+            timeout 60 bash -c \
+              'until docker inspect --format="{{.State.Health.Status}}" petalia_postgres 2>/dev/null | grep -q "^healthy$"; do sleep 3; done'
+
             echo "==> Running migrations"
             docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
 
-            echo "==> Restarting services"
-            docker compose -f docker-compose.prod.yml up -d --no-deps api worker
+            echo "==> Restarting app services"
+            docker compose -f docker-compose.prod.yml up -d --no-deps api worker flower
 
             echo "==> Pruning old images"
             docker image prune -f
