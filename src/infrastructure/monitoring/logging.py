@@ -1,9 +1,9 @@
 import logging
 import sys
+from typing import Any
 
 import structlog
 
-from typing import Any
 from src.shared.config import get_settings
 
 

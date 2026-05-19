@@ -1,4 +1,5 @@
 from typing import Any
+
 import structlog
 
 from src.application.commands.create_analysis_command import CreateAnalysisCommand

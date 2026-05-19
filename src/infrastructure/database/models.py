@@ -4,7 +4,6 @@ from datetime import datetime
 from geoalchemy2 import Geometry as GeoAlchemyGeometry
 from sqlalchemy import (
     ARRAY,
-    Column,
     DateTime,
     Float,
     ForeignKey,
