@@ -94,7 +94,7 @@ class IndexCalculator:
         Uses a combined multi-band reduceRegion to minimise latency and quota usage.
         """
         try:
-            ee_geometry = ee.Geometry(geometry)
+            ee_geometry = ee.Geometry(geometry)  # type: ignore[attr-defined]
 
             # --- S1-3: NDMI (not NDWI) ---
             ndvi = image.normalizedDifference(["B8", "B4"]).rename("NDVI")
@@ -120,10 +120,10 @@ class IndexCalculator:
 
             # --- Single combined reduceRegion call for NDVI stats (mean+min+max+std) ---
             ndvi_reducer = (
-                ee.Reducer.mean()
-                .combine(ee.Reducer.min(), sharedInputs=True)
-                .combine(ee.Reducer.max(), sharedInputs=True)
-                .combine(ee.Reducer.stdDev(), sharedInputs=True)
+                ee.Reducer.mean()  # type: ignore[attr-defined]
+                .combine(ee.Reducer.min(), sharedInputs=True)  # type: ignore[attr-defined]
+                .combine(ee.Reducer.max(), sharedInputs=True)  # type: ignore[attr-defined]
+                .combine(ee.Reducer.stdDev(), sharedInputs=True)  # type: ignore[attr-defined]
             )
 
             # S3-2: bestEffort=False — enforce exact scale, never degrade resolution
@@ -138,7 +138,7 @@ class IndexCalculator:
             # Combined pass for NDMI, NDRE, SAVI, EVI2 — one GEE call
             multi_band_image = ndmi.addBands(ndre).addBands(savi).addBands(evi2)
             multi_stats_raw = multi_band_image.reduceRegion(
-                reducer=ee.Reducer.mean(),
+                reducer=ee.Reducer.mean(),  # type: ignore[attr-defined]
                 geometry=ee_geometry,
                 scale=self._ANALYSIS_SCALE,
                 maxPixels=self._MAX_PIXELS,
@@ -201,7 +201,7 @@ class IndexCalculator:
     def generate_tiles(self, image: Any, geometry: dict[str, Any]) -> TileResult:
         """Generate tile URL and thumbnail PNG URL from NDVI image."""
         try:
-            ee_geometry = ee.Geometry(geometry)
+            ee_geometry = ee.Geometry(geometry)  # type: ignore[attr-defined]
             ndvi = image.normalizedDifference(["B8", "B4"]).rename("NDVI")
 
             with earth_engine_duration_seconds.labels(operation="get_map_id").time():

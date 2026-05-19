@@ -160,6 +160,6 @@ def get_batch_result(batch_id: str) -> dict | None:
     """Retrieve batch result from Redis. Returns None if not ready yet."""
     redis = get_redis_sync()
     raw = redis.get(f"{BATCH_RESULT_PREFIX}{batch_id}")
-    if raw is None:
+    if not isinstance(raw, (str, bytes, bytearray)):
         return None
     return json.loads(raw)

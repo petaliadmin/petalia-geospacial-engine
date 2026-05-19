@@ -39,7 +39,7 @@ class SentinelImageFetcher:
 
     def fetch(self, geometry: dict[str, Any]) -> ImageFetchResult:
         get_ee_client()
-        ee_geometry = ee.Geometry(geometry)
+        ee_geometry = ee.Geometry(geometry)  # type: ignore[attr-defined]
 
         try:
             with earth_engine_duration_seconds.labels(operation="fetch").time():
@@ -152,14 +152,14 @@ class SentinelImageFetcher:
     ) -> Any:
         """Build a filtered Sentinel-2 image collection."""
         col = (
-            ee.ImageCollection(self._settings.sentinel_dataset)
+            ee.ImageCollection(self._settings.sentinel_dataset)  # type: ignore[attr-defined]
             .filterBounds(ee_geometry)
             .filterDate(start_date, end_date)
             .map(self._apply_scl_mask)
         )
         if with_cloud_filter:
             col = col.filter(
-                ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", self._settings.sentinel_cloud_max)
+                ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", self._settings.sentinel_cloud_max)  # type: ignore[attr-defined]
             )
         return col
 
@@ -168,9 +168,9 @@ class SentinelImageFetcher:
         method = self._settings.composite_method
 
         if method == "p40":
-            return collection.reduce(ee.Reducer.percentile([40])).clip(ee_geometry)
+            return collection.reduce(ee.Reducer.percentile([40])).clip(ee_geometry)  # type: ignore[attr-defined]
         if method == "p80":
-            return collection.reduce(ee.Reducer.percentile([80])).clip(ee_geometry)
+            return collection.reduce(ee.Reducer.percentile([80])).clip(ee_geometry)  # type: ignore[attr-defined]
         if method == "quality_mosaic":
             # Quality mosaic: prioritises pixels with highest NDVI (least cloudy vegetation)
             def add_ndvi(img: Any) -> Any:
@@ -192,11 +192,11 @@ class SentinelImageFetcher:
         A cs score > 0.6 means the pixel is clear (0 = cloudy, 1 = clear).
         """
         cs_col = (
-            ee.ImageCollection("GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED")
+            ee.ImageCollection("GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED")  # type: ignore[attr-defined]
             .filterBounds(image.geometry())
             .filterDate(
-                ee.Date(image.date().format()),
-                ee.Date(image.date().advance(1, "day")),
+                ee.Date(image.date().format()),  # type: ignore[attr-defined]
+                ee.Date(image.date().advance(1, "day")),  # type: ignore[attr-defined]
             )
         )
         cs_img = cs_col.first()
@@ -204,9 +204,9 @@ class SentinelImageFetcher:
         cloud_score_mask = ee.Algorithms.If(
             cs_col.size().gt(0),
             cs_img.select("cs").gte(0.6),
-            ee.Image(1),  # all pixels valid if no cs image
+            ee.Image(1),  # type: ignore[attr-defined]
         )
-        return image.updateMask(ee.Image(cloud_score_mask))
+        return image.updateMask(ee.Image(cloud_score_mask))  # type: ignore[attr-defined]
 
     @staticmethod
     def _apply_scl_mask(image: Any) -> Any:

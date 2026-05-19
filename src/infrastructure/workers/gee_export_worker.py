@@ -159,7 +159,7 @@ async def _execute_export_pipeline(
 
         # Initialize GEE
         initialize_earth_engine()
-        ee_geometry = ee.Geometry(geometry)
+        ee_geometry = ee.Geometry(geometry)  # type: ignore[attr-defined]
 
         # Step 1 — Fetch and composite images (same SCL mask pipeline)
         fetcher = SentinelImageFetcher()

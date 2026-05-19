@@ -20,7 +20,7 @@ def initialize_earth_engine() -> None:
             return
         settings = get_settings()
         try:
-            credentials = ee.ServiceAccountCredentials(
+            credentials = ee.ServiceAccountCredentials(  # type: ignore[attr-defined]
                 email=settings.gee_service_account,
                 key_file=settings.gee_private_key_path,
             )

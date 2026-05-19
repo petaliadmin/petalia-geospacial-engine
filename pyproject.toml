@@ -106,3 +106,15 @@ disallow_untyped_decorators = false
 module = ["ee", "ee.*"]
 ignore_missing_imports = true
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+# earthengine-api stubs are incomplete in some environments (CI vs local).
+# The attr-defined ignores are needed in CI but flagged as unused locally.
+module = [
+    "src.infrastructure.earth_engine.client",
+    "src.infrastructure.earth_engine.index_calculator",
+    "src.infrastructure.earth_engine.image_fetcher",
+    "src.infrastructure.workers.gee_export_worker",
+]
+warn_unused_ignores = false
+
