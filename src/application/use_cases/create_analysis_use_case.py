@@ -1,3 +1,4 @@
+from typing import Any
 import structlog
 
 from src.application.commands.create_analysis_command import CreateAnalysisCommand
@@ -103,7 +104,8 @@ class AbstractTaskPublisher:
         analysis_id: str,
         field_id: str,
         external_field_id: str,
-        geometry: dict,
+        geometry: dict[str, Any],
         requested_metrics: list[str],
+        area_ha: float = 0.0,
     ) -> None:
         raise NotImplementedError

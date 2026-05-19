@@ -1,5 +1,5 @@
 from collections.abc import AsyncGenerator
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +33,7 @@ async def get_session_dep() -> AsyncGenerator[AsyncSession, None]:
 SessionDep = Annotated[AsyncSession, Depends(get_session_dep)]
 
 
-async def get_cache_service(redis=Depends(get_redis)) -> RedisCacheService:
+async def get_cache_service(redis: Any = Depends(get_redis)) -> RedisCacheService:
     return RedisCacheService(redis)
 
 

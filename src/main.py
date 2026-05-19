@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Callable, cast
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,7 +59,10 @@ def create_app() -> FastAPI:
     # Rate limiting
     limiter = Limiter(key_func=get_remote_address, default_limits=[settings.rate_limit_default])
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_exception_handler(
+        RateLimitExceeded,
+        cast(Callable[[Request, Exception], JSONResponse], _rate_limit_exceeded_handler),
+    )
     app.add_middleware(SlowAPIMiddleware)
 
     # CORS

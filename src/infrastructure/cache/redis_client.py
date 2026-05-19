@@ -1,14 +1,15 @@
+from typing import Any
 import redis
 import redis.asyncio as aioredis
 from redis.asyncio import Redis
 
 from src.shared.config import get_settings
 
-_redis_client: Redis | None = None
-_redis_sync_client: redis.Redis | None = None
+_redis_client: Redis[Any] | None = None
+_redis_sync_client: redis.Redis[Any] | None = None
 
 
-async def get_redis() -> Redis:
+async def get_redis() -> Redis[Any]:
     global _redis_client
     if _redis_client is None:
         settings = get_settings()
@@ -20,7 +21,7 @@ async def get_redis() -> Redis:
     return _redis_client
 
 
-def get_redis_sync() -> redis.Redis:
+def get_redis_sync() -> redis.Redis[Any]:
     """Synchronous Redis client for use inside Celery tasks (non-async context).
 
     Celery tasks run in a sync context. Using the async client inside them
@@ -41,5 +42,5 @@ def get_redis_sync() -> redis.Redis:
 async def close_redis() -> None:
     global _redis_client
     if _redis_client is not None:
-        await _redis_client.aclose()
+        await _redis_client.close()
         _redis_client = None

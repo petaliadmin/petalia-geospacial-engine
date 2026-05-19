@@ -3,6 +3,7 @@ import sys
 
 import structlog
 
+from typing import Any
 from src.shared.config import get_settings
 
 
@@ -10,7 +11,7 @@ def configure_logging() -> None:
     settings = get_settings()
     log_level = getattr(logging, settings.log_level.upper(), logging.INFO)
 
-    shared_processors = [
+    shared_processors: list[Any] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         structlog.stdlib.add_logger_name,

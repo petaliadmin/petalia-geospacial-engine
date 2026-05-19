@@ -193,7 +193,7 @@ async def _execute_export_pipeline(
             region=ee_geometry,
             scale=20,
             crs="EPSG:4326",
-            maxPixels=1e10,
+            maxPixels=int(1e10),
             fileFormat="GeoTIFF",
         )
         export_task.start()
