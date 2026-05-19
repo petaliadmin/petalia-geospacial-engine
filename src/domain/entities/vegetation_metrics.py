@@ -18,18 +18,19 @@ class VegetationMetrics:
           (Gao 1996, moisture stress index), not NDWI (McFeeters 1996, open water).
     S2-1: Added ndre_mean, savi_mean, evi2_mean — optional, None when not computed.
     """
+
     id: str
     analysis_id: str
     ndvi_mean: float
     ndvi_min: float
     ndvi_max: float
     ndvi_std: float
-    ndmi_mean: float          # S1-3: formerly ndwi_mean
-    ndre_mean: float | None   # S2-1: Red-Edge, None when not requested
-    savi_mean: float | None   # S2-1: Soil-Adjusted, None when not requested
-    evi2_mean: float | None   # S2-1: Enhanced VI, None when not requested
+    ndmi_mean: float  # S1-3: formerly ndwi_mean
+    ndre_mean: float | None  # S2-1: Red-Edge, None when not requested
+    savi_mean: float | None  # S2-1: Soil-Adjusted, None when not requested
+    evi2_mean: float | None  # S2-1: Enhanced VI, None when not requested
     variability_index: float
-    trend: VegetationTrend    # S1-2: set by AlertDetectionService, not from single image
+    trend: VegetationTrend  # S1-2: set by AlertDetectionService, not from single image
     created_at: datetime = field(default_factory=utcnow)
 
     @classmethod

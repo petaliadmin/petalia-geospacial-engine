@@ -29,14 +29,15 @@ class IndexResult:
           misleading agronomists.
     S2-1: NDRE, SAVI, EVI2 added for precision agriculture.
     """
+
     ndvi_mean: float
     ndvi_min: float
     ndvi_max: float
     ndvi_std: float
-    ndmi_mean: float          # S1-3: was ndwi_mean
-    ndre_mean: float          # S2-1: Red-Edge — nitrogen/chlorophyll stress
-    savi_mean: float          # S2-1: Soil-Adjusted — bare soil correction
-    evi2_mean: float          # S2-1: Enhanced — dense canopy saturation correction
+    ndmi_mean: float  # S1-3: was ndwi_mean
+    ndre_mean: float  # S2-1: Red-Edge — nitrogen/chlorophyll stress
+    savi_mean: float  # S2-1: Soil-Adjusted — bare soil correction
+    evi2_mean: float  # S2-1: Enhanced — dense canopy saturation correction
     variability_index: float
 
 
@@ -135,12 +136,7 @@ class IndexCalculator:
             )
 
             # Combined pass for NDMI, NDRE, SAVI, EVI2 — one GEE call
-            multi_band_image = (
-                ndmi
-                .addBands(ndre)
-                .addBands(savi)
-                .addBands(evi2)
-            )
+            multi_band_image = ndmi.addBands(ndre).addBands(savi).addBands(evi2)
             multi_stats_raw = multi_band_image.reduceRegion(
                 reducer=ee.Reducer.mean(),
                 geometry=ee_geometry,
@@ -151,10 +147,14 @@ class IndexCalculator:
 
             # S3-3: Apply timeout to all .getInfo() calls
             with earth_engine_duration_seconds.labels(operation="reduce_region").time():
-                earth_engine_requests_total.labels(operation="reduce_region", status="started").inc()
+                earth_engine_requests_total.labels(
+                    operation="reduce_region", status="started"
+                ).inc()
                 ndvi_stats = _getinfo_with_timeout(ndvi_stats_raw)
                 multi_stats = _getinfo_with_timeout(multi_stats_raw)
-                earth_engine_requests_total.labels(operation="reduce_region", status="success").inc()
+                earth_engine_requests_total.labels(
+                    operation="reduce_region", status="success"
+                ).inc()
 
             ndvi_mean = float(ndvi_stats.get("NDVI_mean") or 0.0)
             ndvi_min = float(ndvi_stats.get("NDVI_min") or 0.0)
@@ -208,12 +208,14 @@ class IndexCalculator:
                 map_id = ndvi.getMapId(self.NDVI_VIS)
                 tile_url = map_id["tile_fetcher"].url_format
 
-                thumbnail_url = ndvi.getThumbURL({
-                    **self.NDVI_VIS,
-                    "region": ee_geometry,
-                    "dimensions": 512,
-                    "format": "png",
-                })
+                thumbnail_url = ndvi.getThumbURL(
+                    {
+                        **self.NDVI_VIS,
+                        "region": ee_geometry,
+                        "dimensions": 512,
+                        "format": "png",
+                    }
+                )
 
             logger.info("tiles_generated")
             return TileResult(tile_url=tile_url, thumbnail_url=thumbnail_url)

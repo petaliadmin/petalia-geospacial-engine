@@ -8,9 +8,7 @@ from src.domain.value_objects.requested_metrics import RequestedMetric
 
 GEOMETRY = {
     "type": "Polygon",
-    "coordinates": [
-        [[-1.5, 47.5], [-1.4, 47.5], [-1.4, 47.6], [-1.5, 47.6], [-1.5, 47.5]]
-    ],
+    "coordinates": [[[-1.5, 47.5], [-1.4, 47.5], [-1.4, 47.6], [-1.5, 47.6], [-1.5, 47.5]]],
 }
 
 
@@ -25,11 +23,13 @@ class MockIndexResult:
     evi2_mean = 0.60
     variability_index = 0.10
     from src.domain.value_objects.vegetation_trend import VegetationTrend
+
     trend = VegetationTrend.UP
 
 
 class MockFetchResult:
     from datetime import datetime, timezone
+
     image = MagicMock()
     acquisition_date = datetime(2026, 5, 17, tzinfo=UTC)
     cloud_coverage = 0.12
@@ -85,6 +85,7 @@ async def test_pipeline_marks_analysis_completed():
             mock_alerts.return_value.detect.return_value = []
 
             from src.infrastructure.workers.analysis_worker import _execute_pipeline
+
             result = await _execute_pipeline(
                 analysis_id=analysis_id,
                 field_id="field-uuid",
@@ -121,6 +122,7 @@ async def test_pipeline_marks_failed_on_error():
             mock_fetcher.return_value.fetch.side_effect = RuntimeError("GEE is down")
 
             from src.infrastructure.workers.analysis_worker import _execute_pipeline
+
             with pytest.raises(RuntimeError):
                 await _execute_pipeline(
                     analysis_id=analysis.id,

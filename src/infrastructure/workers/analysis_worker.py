@@ -23,6 +23,7 @@ from src.infrastructure.earth_engine.client import initialize_earth_engine
 from src.infrastructure.earth_engine.image_fetcher import SentinelImageFetcher
 from src.infrastructure.earth_engine.index_calculator import IndexCalculator
 from src.infrastructure.messaging.celery_app import celery_app
+
 # S2-5: Prometheus metrics — all counters and histograms are now actually incremented
 from src.infrastructure.monitoring.metrics import (
     active_analyses_gauge,
@@ -164,12 +165,12 @@ async def _execute_pipeline(
                 ndvi_min=index_result.ndvi_min,
                 ndvi_max=index_result.ndvi_max,
                 ndvi_std=index_result.ndvi_std,
-                ndmi_mean=index_result.ndmi_mean,         # S1-3: was ndwi_mean
-                ndre_mean=index_result.ndre_mean,          # S2-1
-                savi_mean=index_result.savi_mean,          # S2-1
-                evi2_mean=index_result.evi2_mean,          # S2-1
+                ndmi_mean=index_result.ndmi_mean,  # S1-3: was ndwi_mean
+                ndre_mean=index_result.ndre_mean,  # S2-1
+                savi_mean=index_result.savi_mean,  # S2-1
+                evi2_mean=index_result.evi2_mean,  # S2-1
                 variability_index=index_result.variability_index,
-                trend=trend,                               # S1-2: real temporal trend
+                trend=trend,  # S1-2: real temporal trend
             )
             await metrics_repo.save(metrics)
 
@@ -232,7 +233,6 @@ async def _execute_pipeline(
 
 def _make_temp_metrics(index_result: Any) -> VegetationMetrics:
     """Build a lightweight VegetationMetrics for trend comparison without DB round-trip."""
-    from src.domain.value_objects.vegetation_trend import VegetationTrend
     return VegetationMetrics(
         id="__temp__",
         analysis_id="__temp__",

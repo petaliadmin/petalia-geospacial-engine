@@ -3,9 +3,8 @@
 Verifies that all 6 cloud/invalid classes are correctly excluded
 from the Scene Classification Layer mask applied to Sentinel-2 images.
 """
-from unittest.mock import MagicMock, patch
 
-import pytest
+from unittest.mock import MagicMock
 
 from src.infrastructure.earth_engine.image_fetcher import SentinelImageFetcher
 

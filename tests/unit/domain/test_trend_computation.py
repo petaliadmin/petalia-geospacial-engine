@@ -3,7 +3,6 @@
 Verifies that trend is computed from the NDVI delta between two real
 observations, not from a single image's statistics.
 """
-import pytest
 
 from src.domain.services.alert_detection_service import AlertDetectionService
 from src.domain.value_objects.vegetation_trend import VegetationTrend

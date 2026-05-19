@@ -1,5 +1,3 @@
-
-
 class DomainException(Exception):  # noqa: N818
     """Base domain exception."""
 

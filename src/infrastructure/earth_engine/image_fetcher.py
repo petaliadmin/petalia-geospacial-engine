@@ -19,7 +19,7 @@ logger = structlog.get_logger(__name__)
 
 @dataclass
 class ImageFetchResult:
-    image: Any          # ee.Image composite
+    image: Any  # ee.Image composite
     acquisition_date: datetime
     cloud_coverage: float
     scene_count: int
@@ -64,10 +64,7 @@ class SentinelImageFetcher:
         """S3-1: Adaptive temporal window — tries 30 → 60 → 90 days with cloud filter,
         then falls back to 90 days without cloud filter as last resort."""
         max_days = self._settings.sentinel_date_range_max_days
-        windows = [
-            d for d in [30, 60, 90]
-            if d <= max_days
-        ]
+        windows = [d for d in [30, 60, 90] if d <= max_days]
         # Ensure at least one window
         if not windows:
             windows = [max_days]
@@ -115,9 +112,7 @@ class SentinelImageFetcher:
         # S3-6: Configurable composite method
         composite = self._build_composite(collection, ee_geometry)
 
-        mean_cloud = (
-            collection.aggregate_mean("CLOUDY_PIXEL_PERCENTAGE").getInfo() or 0.0
-        )
+        mean_cloud = collection.aggregate_mean("CLOUDY_PIXEL_PERCENTAGE").getInfo() or 0.0
         cloud_fraction = mean_cloud / 100.0
 
         latest_date_info = (
@@ -180,6 +175,7 @@ class SentinelImageFetcher:
             # Quality mosaic: prioritises pixels with highest NDVI (least cloudy vegetation)
             def add_ndvi(img: Any) -> Any:
                 return img.addBands(img.normalizedDifference(["B8", "B4"]).rename("NDVI"))
+
             return collection.map(add_ndvi).qualityMosaic("NDVI").clip(ee_geometry)
 
         # Default: median — most stable for small collections
@@ -229,11 +225,11 @@ class SentinelImageFetcher:
         """
         scl = image.select("SCL")
         cloud_mask = (
-            scl.neq(0)   # No Data
-            .And(scl.neq(1))   # Saturated / Defective
-            .And(scl.neq(3))   # Cloud Shadow
-            .And(scl.neq(8))   # Cloud Medium Probability
-            .And(scl.neq(9))   # Cloud High Probability
+            scl.neq(0)  # No Data
+            .And(scl.neq(1))  # Saturated / Defective
+            .And(scl.neq(3))  # Cloud Shadow
+            .And(scl.neq(8))  # Cloud Medium Probability
+            .And(scl.neq(9))  # Cloud High Probability
             .And(scl.neq(10))  # Thin Cirrus
         )
         return image.updateMask(cloud_mask)

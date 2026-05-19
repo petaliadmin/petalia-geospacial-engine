@@ -76,7 +76,11 @@ class SatelliteObservationModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     analysis_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+        String(50),
+        ForeignKey("analyses.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
     acquisition_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     cloud_coverage: Mapped[float] = mapped_column(Float, nullable=False)
@@ -92,7 +96,11 @@ class VegetationMetricsModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     analysis_id: Mapped[str] = mapped_column(
-        String(50), ForeignKey("analyses.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+        String(50),
+        ForeignKey("analyses.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
     ndvi_mean: Mapped[float] = mapped_column(Float, nullable=False)
     ndvi_min: Mapped[float] = mapped_column(Float, nullable=False)

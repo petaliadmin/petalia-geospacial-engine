@@ -7,9 +7,7 @@ from src.infrastructure.database.repositories import SQLAnalysisRepository, SQLF
 
 GEOMETRY = {
     "type": "Polygon",
-    "coordinates": [
-        [[-1.5, 47.5], [-1.4, 47.5], [-1.4, 47.6], [-1.5, 47.6], [-1.5, 47.5]]
-    ],
+    "coordinates": [[[-1.5, 47.5], [-1.4, 47.5], [-1.4, 47.6], [-1.5, 47.6], [-1.5, 47.5]]],
 }
 
 

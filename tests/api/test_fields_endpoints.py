@@ -2,6 +2,7 @@
 
 Tests mock at the use-case layer using patch() — no database or GEE needed.
 """
+
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
@@ -20,12 +21,14 @@ GEOMETRY = {
 # S2-3: Tiles TTL must be ≤ 172800 (48h)
 # ---------------------------------------------------------------------------
 
+
 def test_tiles_ttl_setting_is_at_most_48h() -> None:
     """S2-3: REDIS_CACHE_TTL_TILES must be ≤ 172800 (48h).
 
     GEE tile URLs expire within 1-7 days. Caching beyond 48h serves dead URLs.
     """
     from src.shared.config import get_settings
+
     settings = get_settings()
     assert settings.redis_cache_ttl_tiles <= 172800, (
         f"redis_cache_ttl_tiles={settings.redis_cache_ttl_tiles} > 172800 (48h). "
@@ -36,6 +39,7 @@ def test_tiles_ttl_setting_is_at_most_48h() -> None:
 # ---------------------------------------------------------------------------
 # S4-3: Timeseries endpoint returns multi-index fields
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_timeseries_response_contains_ndmi_not_ndwi(async_client, api_key_headers):

@@ -2,6 +2,7 @@
 
 Tests mock at the use-case layer using patch() — no database or GEE needed.
 """
+
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
@@ -25,6 +26,7 @@ CREATE_PAYLOAD = {
 
 def _make_analysis_status_dto(field_id: str = "field_001", analysis_id: str = "ana_test123"):
     from src.application.dto.analysis_dto import AnalysisStatusDTO
+
     return AnalysisStatusDTO(
         analysis_id=analysis_id,
         status=AnalysisStatus.PENDING,
@@ -36,6 +38,7 @@ def _make_analysis_status_dto(field_id: str = "field_001", analysis_id: str = "a
 # ---------------------------------------------------------------------------
 # S1-3: Verify response uses ndmiMean not ndwiMean
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_create_analysis_returns_202(async_client, api_key_headers):
@@ -60,7 +63,6 @@ async def test_create_analysis_returns_202(async_client, api_key_headers):
 async def test_get_analysis_response_uses_ndmi_not_ndwi(async_client, api_key_headers):
     """S1-3: GET /v1/analyses/{id} response must contain 'meanNdmi', not 'meanNdwi'."""
     from src.application.dto.analysis_dto import (
-        AlertDTO,
         FieldAnalysisDTO,
         VegetationDTO,
         VisualizationDTO,
@@ -73,8 +75,12 @@ async def test_get_analysis_response_uses_ndmi_not_ndwi(async_client, api_key_he
         analysis_date=datetime.now(UTC),
         status=AnalysisStatus.COMPLETED,
         vegetation=VegetationDTO(
-            mean_ndvi=0.72, min_ndvi=0.31, max_ndvi=0.91, std_ndvi=0.12,
-            trend=VegetationTrend.UP, health=VegetationHealth.GOOD,
+            mean_ndvi=0.72,
+            min_ndvi=0.31,
+            max_ndvi=0.91,
+            std_ndvi=0.12,
+            trend=VegetationTrend.UP,
+            health=VegetationHealth.GOOD,
         ),
         water=WaterDTO(mean_ndmi=0.08),  # S1-3
         alerts=[],
@@ -94,9 +100,7 @@ async def test_get_analysis_response_uses_ndmi_not_ndwi(async_client, api_key_he
 
     # S1-3: Key assertion — API must use ndmiMean
     assert "water" in data
-    assert "meanNdmi" in data["water"], (
-        "S1-3: API response must contain 'meanNdmi', not 'meanNdwi'"
-    )
+    assert "meanNdmi" in data["water"], "S1-3: API response must contain 'meanNdmi', not 'meanNdwi'"
     assert "meanNdwi" not in data.get("water", {}), (
         "S1-3: 'meanNdwi' must NOT appear in the response"
     )
@@ -136,9 +140,7 @@ async def test_get_analysis_not_found(async_client, api_key_headers):
         new_callable=AsyncMock,
         side_effect=AnalysisNotFoundException("nonexistent-id"),
     ):
-        response = await async_client.get(
-            "/v1/analyses/nonexistent-id", headers=api_key_headers
-        )
+        response = await async_client.get("/v1/analyses/nonexistent-id", headers=api_key_headers)
     assert response.status_code == 404
 
 
@@ -146,15 +148,19 @@ async def test_get_analysis_not_found(async_client, api_key_headers):
 # S4-1: Batch endpoint tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_batch_analysis_returns_202(async_client, api_key_headers):
     """S4-1: POST /v1/analyses/batch must return 202 with batch summary."""
-    with patch(
-        "src.application.use_cases.create_analysis_use_case.CreateAnalysisUseCase.execute",
-        new_callable=AsyncMock,
-    ) as mock_exec, patch(
-        "src.infrastructure.workers.batch_analysis_worker.publish_batch_group"
-    ) as mock_publish:
+    with (
+        patch(
+            "src.application.use_cases.create_analysis_use_case.CreateAnalysisUseCase.execute",
+            new_callable=AsyncMock,
+        ) as mock_exec,
+        patch(
+            "src.infrastructure.workers.batch_analysis_worker.publish_batch_group"
+        ) as mock_publish,
+    ):
         mock_exec.side_effect = [
             _make_analysis_status_dto("field_A", "ana_001"),
             _make_analysis_status_dto("field_B", "ana_002"),
@@ -185,11 +191,12 @@ async def test_batch_analysis_partial_failure(async_client, api_key_headers):
     """S4-1: Partial failure must not abort the batch — failed items reported separately."""
     from src.shared.exceptions import InvalidGeometryException
 
-    with patch(
-        "src.application.use_cases.create_analysis_use_case.CreateAnalysisUseCase.execute",
-        new_callable=AsyncMock,
-    ) as mock_exec, patch(
-        "src.infrastructure.workers.batch_analysis_worker.publish_batch_group"
+    with (
+        patch(
+            "src.application.use_cases.create_analysis_use_case.CreateAnalysisUseCase.execute",
+            new_callable=AsyncMock,
+        ) as mock_exec,
+        patch("src.infrastructure.workers.batch_analysis_worker.publish_batch_group"),
     ):
         mock_exec.side_effect = [
             _make_analysis_status_dto("field_A", "ana_001"),  # succeeds

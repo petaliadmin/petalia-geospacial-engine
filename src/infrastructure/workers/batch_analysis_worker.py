@@ -17,12 +17,12 @@ Why group() over asyncio.gather():
   - chord() fires a callback once every task in the group has finished.
   - group() respects retry policies, dead letter queues, and acks_late.
 """
+
 import json
 from typing import Any
 
 import structlog
-from celery import chord, group, states
-from celery.result import AsyncResult
+from celery import chord, group
 
 from src.infrastructure.cache.redis_client import get_redis_sync
 from src.infrastructure.messaging.celery_app import celery_app
@@ -36,6 +36,7 @@ BATCH_TTL_SECONDS = 86400  # 24h
 # ---------------------------------------------------------------------------
 # Chord callback — fires once ALL run_analysis tasks in the group complete
 # ---------------------------------------------------------------------------
+
 
 @celery_app.task(
     name="src.infrastructure.workers.batch_analysis_worker.on_batch_completed",
@@ -144,9 +145,7 @@ def publish_batch_group(
     )
 
     # chord(group | callback) fires on_batch_completed when all tasks finish
-    batch_chord = chord(tasks)(
-        on_batch_completed.s(batch_id=batch_id)
-    )
+    batch_chord = chord(tasks)(on_batch_completed.s(batch_id=batch_id))
 
     logger.info(
         "batch_group_published",

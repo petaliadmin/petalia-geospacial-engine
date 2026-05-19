@@ -3,9 +3,9 @@ from enum import StrEnum
 
 class VegetationHealth(StrEnum):
     EXCELLENT = "EXCELLENT"  # NDVI >= 0.6
-    GOOD = "GOOD"            # NDVI 0.4–0.6
-    MODERATE = "MODERATE"    # NDVI 0.3–0.4
-    POOR = "POOR"            # NDVI < 0.3
+    GOOD = "GOOD"  # NDVI 0.4–0.6
+    MODERATE = "MODERATE"  # NDVI 0.3–0.4
+    POOR = "POOR"  # NDVI < 0.3
 
     @classmethod
     def from_ndvi(cls, ndvi: float) -> "VegetationHealth":

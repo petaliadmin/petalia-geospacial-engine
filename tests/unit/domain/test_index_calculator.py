@@ -2,12 +2,12 @@
 
 All GEE calls are mocked — no live Earth Engine connection required.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.infrastructure.earth_engine.index_calculator import (
-    GEE_TIMEOUT_SECONDS,
     IndexCalculator,
     IndexResult,
     _getinfo_with_timeout,
@@ -56,8 +56,14 @@ class TestIndexResult:
     def test_index_result_has_ndmi_not_ndwi(self) -> None:
         """S1-3: IndexResult must use ndmi_mean, not ndwi_mean."""
         result = IndexResult(
-            ndvi_mean=0.72, ndvi_min=0.31, ndvi_max=0.91, ndvi_std=0.12,
-            ndmi_mean=0.08, ndre_mean=0.28, savi_mean=0.52, evi2_mean=0.65,
+            ndvi_mean=0.72,
+            ndvi_min=0.31,
+            ndvi_max=0.91,
+            ndvi_std=0.12,
+            ndmi_mean=0.08,
+            ndre_mean=0.28,
+            savi_mean=0.52,
+            evi2_mean=0.65,
             variability_index=0.17,
         )
         assert hasattr(result, "ndmi_mean"), "ndmi_mean must exist"
@@ -67,8 +73,14 @@ class TestIndexResult:
     def test_index_result_has_all_s2_1_indices(self) -> None:
         """S2-1: All three new indices must be present."""
         result = IndexResult(
-            ndvi_mean=0.70, ndvi_min=0.30, ndvi_max=0.90, ndvi_std=0.10,
-            ndmi_mean=0.05, ndre_mean=0.25, savi_mean=0.45, evi2_mean=0.60,
+            ndvi_mean=0.70,
+            ndvi_min=0.30,
+            ndvi_max=0.90,
+            ndvi_std=0.10,
+            ndmi_mean=0.05,
+            ndre_mean=0.25,
+            savi_mean=0.45,
+            evi2_mean=0.60,
             variability_index=0.14,
         )
         assert result.ndre_mean == 0.25, "NDRE must be present"
@@ -81,7 +93,6 @@ class TestGetInfoWithTimeout:
 
     def test_timeout_raises_earth_engine_exception(self) -> None:
         """A getInfo() that takes longer than timeout must raise EarthEngineException."""
-        import concurrent.futures
         import time
 
         slow_object = MagicMock()
@@ -104,7 +115,6 @@ class TestIndexCalculatorBestEffort:
 
     def test_compute_uses_best_effort_false(self) -> None:
         """bestEffort=False must be enforced in all reduceRegion calls."""
-        import ee as ee_real
 
         with patch("src.infrastructure.earth_engine.index_calculator.ee") as mock_ee:
             with patch(
@@ -151,11 +161,18 @@ class TestVariabilityIndex:
         """Division by zero must be handled when ndvi_mean approaches 0."""
         # ndvi_mean = 0.001 is the minimum denominator floor
         from src.infrastructure.earth_engine.index_calculator import IndexResult
+
         # variability_index = 0.10 / max(|0.001|, 0.001) = 0.10 / 0.001 = 100
         # This is the ceiling behavior — just verify no ZeroDivisionError
         result = IndexResult(
-            ndvi_mean=0.0, ndvi_min=0.0, ndvi_max=0.0, ndvi_std=0.10,
-            ndmi_mean=0.0, ndre_mean=0.0, savi_mean=0.0, evi2_mean=0.0,
+            ndvi_mean=0.0,
+            ndvi_min=0.0,
+            ndvi_max=0.0,
+            ndvi_std=0.10,
+            ndmi_mean=0.0,
+            ndre_mean=0.0,
+            savi_mean=0.0,
+            evi2_mean=0.0,
             variability_index=100.0,  # computed externally
         )
         assert result.variability_index == 100.0

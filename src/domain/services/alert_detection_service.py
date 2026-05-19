@@ -10,9 +10,9 @@ from src.shared.config import get_settings
 # S4-4: Phenological thresholds — NDVI low threshold varies by growing stage.
 # A NDVI of 0.25 is normal at germination (March) but critical in peak season (July).
 PHENOLOGY_THRESHOLDS: dict[str, dict] = {
-    "early_season": {"doy_range": (60, 150), "ndvi_low": 0.15},    # Mar–May: seedling stage
-    "peak_season":  {"doy_range": (150, 240), "ndvi_low": 0.40},   # Jun–Aug: full canopy
-    "late_season":  {"doy_range": (240, 330), "ndvi_low": 0.20},   # Sep–Nov: senescence
+    "early_season": {"doy_range": (60, 150), "ndvi_low": 0.15},  # Mar–May: seedling stage
+    "peak_season": {"doy_range": (150, 240), "ndvi_low": 0.40},  # Jun–Aug: full canopy
+    "late_season": {"doy_range": (240, 330), "ndvi_low": 0.20},  # Sep–Nov: senescence
 }
 
 
@@ -109,8 +109,10 @@ class AlertDetectionService:
             return []
 
         severity = (
-            AlertSeverity.CRITICAL if metrics.ndvi_mean < 0.10
-            else AlertSeverity.HIGH if metrics.ndvi_mean < 0.20
+            AlertSeverity.CRITICAL
+            if metrics.ndvi_mean < 0.10
+            else AlertSeverity.HIGH
+            if metrics.ndvi_mean < 0.20
             else AlertSeverity.MEDIUM
         )
         return [
@@ -141,8 +143,10 @@ class AlertDetectionService:
             return []
 
         severity = (
-            AlertSeverity.CRITICAL if drop_pct > 0.50
-            else AlertSeverity.HIGH if drop_pct > 0.35
+            AlertSeverity.CRITICAL
+            if drop_pct > 0.50
+            else AlertSeverity.HIGH
+            if drop_pct > 0.35
             else AlertSeverity.MEDIUM
         )
         return [
@@ -169,8 +173,10 @@ class AlertDetectionService:
             return []
 
         severity = (
-            AlertSeverity.HIGH if cloud_coverage > 0.70
-            else AlertSeverity.MEDIUM if cloud_coverage > 0.50
+            AlertSeverity.HIGH
+            if cloud_coverage > 0.70
+            else AlertSeverity.MEDIUM
+            if cloud_coverage > 0.50
             else AlertSeverity.LOW
         )
         return [
@@ -198,8 +204,10 @@ class AlertDetectionService:
             return []
 
         severity = (
-            AlertSeverity.CRITICAL if metrics.ndmi_mean < -0.30
-            else AlertSeverity.HIGH if metrics.ndmi_mean < -0.20
+            AlertSeverity.CRITICAL
+            if metrics.ndmi_mean < -0.30
+            else AlertSeverity.HIGH
+            if metrics.ndmi_mean < -0.20
             else AlertSeverity.MEDIUM
         )
         return [

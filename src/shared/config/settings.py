@@ -33,10 +33,10 @@ class Settings(BaseSettings):
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
-    redis_cache_ttl_latest: int = 86400        # 24h
-    redis_cache_ttl_timeseries: int = 604800   # 7 days
+    redis_cache_ttl_latest: int = 86400  # 24h
+    redis_cache_ttl_timeseries: int = 604800  # 7 days
     # S2-3: 48h — aligned with GEE tile URL expiration (1-7 days max, 48h is safe)
-    redis_cache_ttl_tiles: int = 172800        # 48h (was 30 days — GEE URLs expire)
+    redis_cache_ttl_tiles: int = 172800  # 48h (was 30 days — GEE URLs expire)
 
     # Celery
     celery_broker_url: str = "redis://localhost:6379/1"
@@ -53,13 +53,13 @@ class Settings(BaseSettings):
     analysis_cache_ttl_hours: int = 48
 
     # NDVI alert thresholds
-    ndvi_low_threshold: float = 0.30          # Default (overridden by phenology in service)
+    ndvi_low_threshold: float = 0.30  # Default (overridden by phenology in service)
     ndvi_drop_threshold: float = 0.20
     cloud_cover_threshold: float = 0.30
 
     # S2-2: New agronomic alert thresholds
-    ndmi_stress_threshold: float = -0.10      # NDMI < -0.10 → water stress alert
-    ndre_low_threshold: float = 0.20          # NDRE < 0.20 → nitrogen stress alert
+    ndmi_stress_threshold: float = -0.10  # NDMI < -0.10 → water stress alert
+    ndre_low_threshold: float = 0.20  # NDRE < 0.20 → nitrogen stress alert
     variability_high_threshold: float = 0.30  # VI > 0.30 → high variability alert
 
     # Sentinel-2 dataset

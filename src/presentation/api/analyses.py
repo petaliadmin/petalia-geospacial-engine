@@ -1,10 +1,9 @@
-import asyncio
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.application.commands.create_analysis_command import CreateAnalysisCommand
-from src.application.dto.analysis_dto import BatchAnalysisItemDTO, BatchAnalysisResultDTO, FieldAnalysisDTO
+from src.application.dto.analysis_dto import FieldAnalysisDTO
 from src.application.queries.get_analysis_query import GetAnalysisQuery
 from src.application.use_cases import CreateAnalysisUseCase, GetAnalysisUseCase
 from src.presentation.api.dependencies import (
@@ -74,6 +73,7 @@ async def create_analysis(
 # S4-1: Batch analysis — Celery group() + chord() native orchestration
 # ---------------------------------------------------------------------------
 
+
 @router.post(
     "/batch",
     response_model=BatchAnalysisResponse,
@@ -126,13 +126,15 @@ async def create_batch_analysis(
             # as a group. However, since we can't easily cancel, we use the batch worker
             # as a monitoring/aggregation layer — the individual tasks still run.
             # The batch chord provides the aggregated status.
-            group_items.append({
-                "analysis_id": result.analysis_id,
-                "field_id": field_payload.fieldId,
-                "external_field_id": field_payload.fieldId,
-                "geometry": field_payload.geometry,
-                "requested_metrics": [m.value for m in (field_payload.requestedMetrics or [])],
-            })
+            group_items.append(
+                {
+                    "analysis_id": result.analysis_id,
+                    "field_id": field_payload.fieldId,
+                    "external_field_id": field_payload.fieldId,
+                    "geometry": field_payload.geometry,
+                    "requested_metrics": [m.value for m in (field_payload.requestedMetrics or [])],
+                }
+            )
         except (InvalidGeometryException, AnalysisAlreadyRunningException, Exception) as exc:
             failed += 1
             items.append(
@@ -218,7 +220,9 @@ def _dto_to_detail_response(dto: FieldAnalysisDTO) -> AnalysisDetailResponse:
             stdNdvi=dto.vegetation.std_ndvi,
             trend=dto.vegetation.trend,
             health=dto.vegetation.health,
-        ) if dto.vegetation else None,
+        )
+        if dto.vegetation
+        else None,
         water=WaterResponse(meanNdmi=dto.water.mean_ndmi) if dto.water else None,
         alerts=[
             AlertResponse(
@@ -233,6 +237,8 @@ def _dto_to_detail_response(dto: FieldAnalysisDTO) -> AnalysisDetailResponse:
         visualization=VisualizationResponse(
             tileUrl=dto.visualization.tile_url,
             thumbnailUrl=dto.visualization.thumbnail_url,
-        ) if dto.visualization else None,
+        )
+        if dto.visualization
+        else None,
         cloudCoverage=dto.cloud_coverage,
     )

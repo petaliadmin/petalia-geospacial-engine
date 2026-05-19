@@ -26,6 +26,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging()
 
     import structlog
+
     log = structlog.get_logger(__name__)
     log.info("service_starting", version=settings.app_version, env=settings.app_env)
 
@@ -93,6 +94,7 @@ def create_app() -> FastAPI:
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         import structlog
+
         structlog.get_logger(__name__).error("unhandled_exception", error=str(exc))
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

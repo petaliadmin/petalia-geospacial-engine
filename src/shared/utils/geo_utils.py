@@ -21,8 +21,15 @@ def validate_geojson_geometry(geojson: dict[str, Any]) -> None:
     """Validate GeoJSON geometry. Raises ValueError if invalid."""
     if "type" not in geojson:
         raise ValueError("Missing 'type' field in geometry")
-    valid_types = {"Point", "MultiPoint", "LineString", "MultiLineString",
-                   "Polygon", "MultiPolygon", "GeometryCollection"}
+    valid_types = {
+        "Point",
+        "MultiPoint",
+        "LineString",
+        "MultiLineString",
+        "Polygon",
+        "MultiPolygon",
+        "GeometryCollection",
+    }
     if geojson["type"] not in valid_types:
         raise ValueError(f"Invalid geometry type: {geojson['type']}")
     try:

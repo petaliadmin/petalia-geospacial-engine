@@ -1,4 +1,5 @@
 """Integration conftest — DB fixtures requiring a live PostgreSQL + PostGIS."""
+
 from collections.abc import AsyncGenerator
 
 import pytest_asyncio

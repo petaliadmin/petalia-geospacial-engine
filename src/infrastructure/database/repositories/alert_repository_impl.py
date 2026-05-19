@@ -26,9 +26,7 @@ class SQLAlertRepository(AbstractAlertRepository):
 
     async def get_by_analysis_id(self, analysis_id: str) -> list[AgronomicAlert]:
         result = await self._session.execute(
-            select(AgronomicAlertModel).where(
-                AgronomicAlertModel.analysis_id == analysis_id
-            )
+            select(AgronomicAlertModel).where(AgronomicAlertModel.analysis_id == analysis_id)
         )
         return [self._to_entity(m) for m in result.scalars().all()]
 

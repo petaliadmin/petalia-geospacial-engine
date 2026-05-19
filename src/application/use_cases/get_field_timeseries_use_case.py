@@ -37,9 +37,7 @@ class GetFieldTimeseriesUseCase:
         if field is None:
             raise FieldNotFoundException(query.field_id)
 
-        all_metrics = await self._metrics_repo.get_timeseries_for_field(
-            field.id, limit=query.limit
-        )
+        all_metrics = await self._metrics_repo.get_timeseries_for_field(field.id, limit=query.limit)
         analyses = await self._analysis_repo.list_for_field(field.id, limit=query.limit)
         analysis_map = {a.id: a for a in analyses}
 

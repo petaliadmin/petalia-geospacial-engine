@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,9 +13,7 @@ class SQLMetricsRepository(AbstractMetricsRepository):
 
     async def get_by_analysis_id(self, analysis_id: str) -> VegetationMetrics | None:
         result = await self._session.execute(
-            select(VegetationMetricsModel).where(
-                VegetationMetricsModel.analysis_id == analysis_id
-            )
+            select(VegetationMetricsModel).where(VegetationMetricsModel.analysis_id == analysis_id)
         )
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None

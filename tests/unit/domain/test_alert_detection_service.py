@@ -3,13 +3,10 @@
 Covers: WATER_STRESS, NITROGEN_STRESS, HIGH_VARIABILITY detection
 and the existing NDVI_LOW/NDVI_DROP alerts.
 """
-from unittest.mock import patch
-
-import pytest
 
 from src.domain.services.alert_detection_service import AlertDetectionService
-from src.domain.value_objects.alert_type import AlertType
 from src.domain.value_objects.alert_severity import AlertSeverity
+from src.domain.value_objects.alert_type import AlertType
 from tests.conftest import make_metrics
 
 
@@ -113,9 +110,9 @@ class TestFullDetect:
     def test_detect_returns_multiple_alerts_simultaneously(self) -> None:
         """Multiple conditions can be true at once — all alerts must be returned."""
         metrics = make_metrics(
-            ndvi_mean=0.10,      # NDVI_LOW (critical)
-            ndmi_mean=-0.35,     # WATER_STRESS (high)
-            ndre_mean=0.05,      # NITROGEN_STRESS (medium)
+            ndvi_mean=0.10,  # NDVI_LOW (critical)
+            ndmi_mean=-0.35,  # WATER_STRESS (high)
+            ndre_mean=0.05,  # NITROGEN_STRESS (medium)
             variability_index=0.60,  # HIGH_VARIABILITY (low)
         )
         service = AlertDetectionService()

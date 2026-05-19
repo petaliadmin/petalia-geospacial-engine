@@ -12,9 +12,7 @@ class SQLFieldRepository(AbstractFieldRepository):
         self._session = session
 
     async def get_by_id(self, field_id: str) -> Field | None:
-        result = await self._session.execute(
-            select(FieldModel).where(FieldModel.id == field_id)
-        )
+        result = await self._session.execute(select(FieldModel).where(FieldModel.id == field_id))
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
@@ -41,9 +39,7 @@ class SQLFieldRepository(AbstractFieldRepository):
         return field
 
     async def update(self, field: Field) -> Field:
-        result = await self._session.execute(
-            select(FieldModel).where(FieldModel.id == field.id)
-        )
+        result = await self._session.execute(select(FieldModel).where(FieldModel.id == field.id))
         model = result.scalar_one()
         model.geometry = field.geometry
         model.area_ha = field.area_ha
@@ -54,9 +50,7 @@ class SQLFieldRepository(AbstractFieldRepository):
         return field
 
     async def list_all(self, limit: int = 100, offset: int = 0) -> list[Field]:
-        result = await self._session.execute(
-            select(FieldModel).limit(limit).offset(offset)
-        )
+        result = await self._session.execute(select(FieldModel).limit(limit).offset(offset))
         return [self._to_entity(m) for m in result.scalars().all()]
 
     @staticmethod

@@ -26,6 +26,7 @@ NOTE: The Drive download step requires additional OAuth scopes on the
 service account. If Drive access is not configured, the worker falls back
 to exporting to GCS (Cloud Storage) if GCS_BUCKET is set.
 """
+
 import asyncio
 import os
 import tempfile
@@ -33,7 +34,6 @@ import time
 from typing import Any
 
 import structlog
-from celery.exceptions import MaxRetriesExceededError
 
 from src.domain.entities.satellite_observation import SatelliteObservation
 from src.domain.services.alert_detection_service import AlertDetectionService
@@ -75,7 +75,7 @@ GEE_EXPORT_MAX_WAIT_SECONDS = 1800
     acks_late=True,
     reject_on_worker_lost=True,
     soft_time_limit=2400,  # 40 min soft limit → triggers SoftTimeLimitExceeded
-    time_limit=2700,        # 45 min hard limit → kills task
+    time_limit=2700,  # 45 min hard limit → kills task
 )
 def run_gee_export_analysis(
     self: Any,
@@ -134,7 +134,6 @@ async def _execute_export_pipeline(
     requested_metrics: list[str],
 ) -> dict[str, Any]:
     import ee
-    import numpy as np
 
     from src.domain.entities.vegetation_metrics import VegetationMetrics
     from src.infrastructure.earth_engine.image_fetcher import SentinelImageFetcher
@@ -211,7 +210,10 @@ async def _execute_export_pipeline(
 
         # Step 4 — Compute statistics from GeoTIFF with rasterio
         index_stats = _compute_rasterio_stats(geotiff_path)
-        log.info("rasterio_stats_computed", **{k: round(v, 4) for k, v in index_stats.items() if isinstance(v, float)})
+        log.info(
+            "rasterio_stats_computed",
+            **{k: round(v, 4) for k, v in index_stats.items() if isinstance(v, float)},
+        )
 
         # Cleanup temp file
         try:
@@ -223,16 +225,23 @@ async def _execute_export_pipeline(
 
         # Step 5 — Compute trend
         previous_metrics = await _get_previous_metrics(metrics_repo, field_id, analysis_id)
-        from src.infrastructure.workers.analysis_worker import _make_temp_metrics as _make_temp
-        from src.domain.entities.vegetation_metrics import VegetationMetrics as VM
-        temp = VM(
-            id="__temp__", analysis_id="__temp__",
-            ndvi_mean=index_stats["ndvi_mean"], ndvi_min=index_stats["ndvi_min"],
-            ndvi_max=index_stats["ndvi_max"], ndvi_std=index_stats["ndvi_std"],
-            ndmi_mean=index_stats["ndmi_mean"], ndre_mean=index_stats["ndre_mean"],
-            savi_mean=index_stats["savi_mean"], evi2_mean=index_stats["evi2_mean"],
+        from src.domain.entities.vegetation_metrics import VegetationMetrics
+
+        temp = VegetationMetrics(
+            id="__temp__",
+            analysis_id="__temp__",
+            ndvi_mean=index_stats["ndvi_mean"],
+            ndvi_min=index_stats["ndvi_min"],
+            ndvi_max=index_stats["ndvi_max"],
+            ndvi_std=index_stats["ndvi_std"],
+            ndmi_mean=index_stats["ndmi_mean"],
+            ndre_mean=index_stats["ndre_mean"],
+            savi_mean=index_stats["savi_mean"],
+            evi2_mean=index_stats["evi2_mean"],
             variability_index=index_stats["variability_index"],
-            trend=__import__("src.domain.value_objects.vegetation_trend", fromlist=["VegetationTrend"]).VegetationTrend.STABLE,
+            trend=__import__(
+                "src.domain.value_objects.vegetation_trend", fromlist=["VegetationTrend"]
+            ).VegetationTrend.STABLE,
         )
         trend = AlertDetectionService.compute_trend(temp, previous_metrics)
 
@@ -311,7 +320,6 @@ async def _poll_and_download_export(  # pragma: no cover
     Returns the local path of the downloaded GeoTIFF.
     Raises EarthEngineException if task fails or times out.
     """
-    import ee
 
     elapsed = 0
     while elapsed < GEE_EXPORT_MAX_WAIT_SECONDS:
@@ -328,9 +336,7 @@ async def _poll_and_download_export(  # pragma: no cover
 
         if task_state in ("FAILED", "CANCELLED"):
             error_msg = status.get("error_message", "Unknown GEE export error")
-            raise EarthEngineException(
-                f"GEE batch export task failed: {error_msg}"
-            )
+            raise EarthEngineException(f"GEE batch export task failed: {error_msg}")
 
         # READY / RUNNING / UNSUBMITTED → keep polling
 
@@ -350,8 +356,8 @@ async def _download_from_drive(task_id: str, folder: str, log: Any) -> str:  # p
         from google.oauth2 import service_account
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaIoBaseDownload
+
         from src.shared.config import get_settings
-        import io
 
         settings = get_settings()
         scopes = [

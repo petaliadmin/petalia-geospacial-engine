@@ -41,7 +41,9 @@ def _dict_to_field_analysis_dto(d: dict[str, Any]) -> FieldAnalysisDTO:
             std_ndvi=veg["std_ndvi"],
             trend=VegetationTrend(veg["trend"]),
             health=VegetationHealth(veg["health"]),
-        ) if veg else None,
+        )
+        if veg
+        else None,
         water=WaterDTO(mean_ndmi=water.get("mean_ndmi", water.get("mean_ndwi"))) if water else None,
         alerts=[
             AlertDTO(
@@ -56,9 +58,12 @@ def _dict_to_field_analysis_dto(d: dict[str, Any]) -> FieldAnalysisDTO:
         visualization=VisualizationDTO(
             tile_url=viz.get("tile_url"),
             thumbnail_url=viz.get("thumbnail_url"),
-        ) if viz else None,
+        )
+        if viz
+        else None,
         cloud_coverage=d.get("cloud_coverage"),
     )
+
 
 logger = structlog.get_logger(__name__)
 

@@ -3,7 +3,6 @@
 Verifies the domain entity correctly stores all new fields and
 rejects the old (pre-migration) field names.
 """
-import pytest
 
 from src.domain.entities.vegetation_metrics import VegetationMetrics
 from src.domain.value_objects.vegetation_health import VegetationHealth
@@ -17,8 +16,13 @@ class TestVegetationMetricsFields:
         """S1-3: ndmi_mean must exist, ndwi_mean must not."""
         m = VegetationMetrics.create(
             analysis_id="a1",
-            ndvi_mean=0.65, ndvi_min=0.30, ndvi_max=0.90, ndvi_std=0.12,
-            ndmi_mean=0.08, variability_index=0.18, trend=VegetationTrend.STABLE,
+            ndvi_mean=0.65,
+            ndvi_min=0.30,
+            ndvi_max=0.90,
+            ndvi_std=0.12,
+            ndmi_mean=0.08,
+            variability_index=0.18,
+            trend=VegetationTrend.STABLE,
         )
         assert hasattr(m, "ndmi_mean"), "ndmi_mean field required"
         assert not hasattr(m, "ndwi_mean"), "ndwi_mean must not exist (renamed S1-3)"
@@ -27,9 +31,16 @@ class TestVegetationMetricsFields:
         """S2-1: Three new optional indices must exist."""
         m = VegetationMetrics.create(
             analysis_id="a1",
-            ndvi_mean=0.65, ndvi_min=0.30, ndvi_max=0.90, ndvi_std=0.12,
-            ndmi_mean=0.08, variability_index=0.18, trend=VegetationTrend.STABLE,
-            ndre_mean=0.28, savi_mean=0.48, evi2_mean=0.61,
+            ndvi_mean=0.65,
+            ndvi_min=0.30,
+            ndvi_max=0.90,
+            ndvi_std=0.12,
+            ndmi_mean=0.08,
+            variability_index=0.18,
+            trend=VegetationTrend.STABLE,
+            ndre_mean=0.28,
+            savi_mean=0.48,
+            evi2_mean=0.61,
         )
         assert m.ndre_mean == 0.28
         assert m.savi_mean == 0.48
@@ -39,8 +50,13 @@ class TestVegetationMetricsFields:
         """S2-1: New indices must be None when not provided (backward compat)."""
         m = VegetationMetrics.create(
             analysis_id="a1",
-            ndvi_mean=0.65, ndvi_min=0.30, ndvi_max=0.90, ndvi_std=0.12,
-            ndmi_mean=0.08, variability_index=0.18, trend=VegetationTrend.STABLE,
+            ndvi_mean=0.65,
+            ndvi_min=0.30,
+            ndvi_max=0.90,
+            ndvi_std=0.12,
+            ndmi_mean=0.08,
+            variability_index=0.18,
+            trend=VegetationTrend.STABLE,
         )
         assert m.ndre_mean is None, "ndre_mean must default to None"
         assert m.savi_mean is None, "savi_mean must default to None"
@@ -50,8 +66,13 @@ class TestVegetationMetricsFields:
         """S1-2: trend must be stored in entity (set by AlertDetectionService)."""
         m = VegetationMetrics.create(
             analysis_id="a1",
-            ndvi_mean=0.65, ndvi_min=0.30, ndvi_max=0.90, ndvi_std=0.12,
-            ndmi_mean=0.08, variability_index=0.18, trend=VegetationTrend.UP,
+            ndvi_mean=0.65,
+            ndvi_min=0.30,
+            ndvi_max=0.90,
+            ndvi_std=0.12,
+            ndmi_mean=0.08,
+            variability_index=0.18,
+            trend=VegetationTrend.UP,
         )
         assert m.trend == VegetationTrend.UP
 
@@ -62,16 +83,26 @@ class TestVegetationMetricsRounding:
     def test_ndmi_is_rounded(self) -> None:
         m = VegetationMetrics.create(
             analysis_id="a1",
-            ndvi_mean=0.123456789, ndvi_min=0.1, ndvi_max=0.9, ndvi_std=0.05,
-            ndmi_mean=0.123456789, variability_index=0.1, trend=VegetationTrend.STABLE,
+            ndvi_mean=0.123456789,
+            ndvi_min=0.1,
+            ndvi_max=0.9,
+            ndvi_std=0.05,
+            ndmi_mean=0.123456789,
+            variability_index=0.1,
+            trend=VegetationTrend.STABLE,
         )
         assert m.ndmi_mean == 0.1235
 
     def test_ndre_is_rounded_when_provided(self) -> None:
         m = VegetationMetrics.create(
             analysis_id="a1",
-            ndvi_mean=0.65, ndvi_min=0.30, ndvi_max=0.90, ndvi_std=0.12,
-            ndmi_mean=0.08, variability_index=0.18, trend=VegetationTrend.STABLE,
+            ndvi_mean=0.65,
+            ndvi_min=0.30,
+            ndvi_max=0.90,
+            ndvi_std=0.12,
+            ndmi_mean=0.08,
+            variability_index=0.18,
+            trend=VegetationTrend.STABLE,
             ndre_mean=0.2834567,
         )
         assert m.ndre_mean == 0.2835
@@ -83,7 +114,12 @@ class TestVegetationMetricsHealth:
     def test_health_is_derived_from_ndvi(self) -> None:
         m = VegetationMetrics.create(
             analysis_id="a1",
-            ndvi_mean=0.80, ndvi_min=0.60, ndvi_max=0.95, ndvi_std=0.08,
-            ndmi_mean=0.10, variability_index=0.10, trend=VegetationTrend.UP,
+            ndvi_mean=0.80,
+            ndvi_min=0.60,
+            ndvi_max=0.95,
+            ndvi_std=0.08,
+            ndmi_mean=0.10,
+            variability_index=0.10,
+            trend=VegetationTrend.UP,
         )
         assert m.health == VegetationHealth.from_ndvi(0.80)

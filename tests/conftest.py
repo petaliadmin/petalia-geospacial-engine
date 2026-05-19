@@ -1,8 +1,15 @@
 """Root conftest — pure fixtures only, no infrastructure imports.
 DB/app fixtures live in tests/integration/conftest.py and tests/api/conftest.py.
 """
+
+from unittest.mock import AsyncMock
+
+import pytest
+
 from src.domain.entities.vegetation_metrics import VegetationMetrics
 from src.domain.value_objects.vegetation_trend import VegetationTrend
+from src.presentation.middlewares.auth_middleware import create_access_token
+from src.shared.config import get_settings
 
 
 def make_metrics(
@@ -33,13 +40,6 @@ def make_metrics(
         variability_index=variability_index,
         trend=trend,
     )
-import asyncio
-from unittest.mock import AsyncMock
-
-import pytest
-
-from src.presentation.middlewares.auth_middleware import create_access_token
-from src.shared.config import get_settings
 
 SAMPLE_GEOMETRY = {
     "type": "Polygon",
