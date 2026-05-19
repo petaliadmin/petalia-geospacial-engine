@@ -1,15 +1,15 @@
 """Seed the database with example data for development."""
 import asyncio
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.infrastructure.database.connection import get_session_factory
-from src.infrastructure.database.repositories import SQLFieldRepository, SQLAnalysisRepository
-from src.domain.entities.field import Field
 from src.domain.entities.analysis import Analysis
+from src.domain.entities.field import Field
 from src.domain.value_objects.requested_metrics import RequestedMetric
+from src.infrastructure.database.connection import get_session_factory
+from src.infrastructure.database.repositories import SQLAnalysisRepository, SQLFieldRepository
 
 SAMPLE_GEOMETRY = {
     "type": "Polygon",

@@ -15,14 +15,14 @@ Revision ID: 005
 Revises: 004
 Create Date: 2026-05-18
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 from alembic import op
 
 revision: str = "005"
-down_revision: Union[str, None] = "004"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "004"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -68,13 +68,17 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # Recreate all FKs without CASCADE (original state)
-    op.drop_constraint("vegetation_metrics_analysis_id_fkey", "vegetation_metrics", type_="foreignkey")
+    op.drop_constraint(
+        "vegetation_metrics_analysis_id_fkey", "vegetation_metrics", type_="foreignkey"
+    )
     op.create_foreign_key(
         "vegetation_metrics_analysis_id_fkey", "vegetation_metrics", "analyses",
         ["analysis_id"], ["id"],
     )
 
-    op.drop_constraint("satellite_observations_analysis_id_fkey", "satellite_observations", type_="foreignkey")
+    op.drop_constraint(
+        "satellite_observations_analysis_id_fkey", "satellite_observations", type_="foreignkey"
+    )
     op.create_foreign_key(
         "satellite_observations_analysis_id_fkey", "satellite_observations", "analyses",
         ["analysis_id"], ["id"],
