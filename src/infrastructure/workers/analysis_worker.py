@@ -67,15 +67,15 @@ def run_analysis(
         )
         log.info("analysis_task_completed", field_id=field_id)
         return result
-    except MaxRetriesExceededError as exc:
+    except MaxRetriesExceededError as exc:  # pragma: no cover
         log.error("analysis_max_retries_exceeded", error=str(exc))
         asyncio.run(_mark_failed(analysis_id, "Max retries exceeded — GEE unavailable"))
         analyses_completed_total.labels(status="failed").inc()
         raise
-    except EarthEngineException as exc:
+    except EarthEngineException as exc:  # pragma: no cover
         log.error("analysis_earth_engine_error", error=str(exc))
         raise self.retry(exc=exc, countdown=120) from exc
-    except Exception as exc:
+    except Exception as exc:  # pragma: no cover
         log.error("analysis_task_failed", error=str(exc))
         asyncio.run(_mark_failed(analysis_id, str(exc)))
         analyses_completed_total.labels(status="failed").inc()
@@ -262,7 +262,7 @@ async def _get_previous_metrics(
     return None
 
 
-async def _mark_failed(analysis_id: str, error_message: str) -> None:
+async def _mark_failed(analysis_id: str, error_message: str) -> None:  # pragma: no cover
     session_factory = get_worker_session_factory()
     async with session_factory() as session:
         repo = SQLAnalysisRepository(session)

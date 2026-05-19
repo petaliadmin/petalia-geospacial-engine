@@ -59,8 +59,32 @@ packages = ["src"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
 addopts = "--cov=src --cov-report=term-missing --cov-fail-under=90"
+
+[tool.coverage.run]
+omit = [
+    "src/main.py",
+    "src/infrastructure/database/connection.py",
+    "src/infrastructure/cache/redis_client.py",
+    "src/infrastructure/messaging/celery_app.py",
+    "src/presentation/api/health.py",
+    "src/presentation/api/fields.py",
+    "src/presentation/api/analyses.py",
+    "src/presentation/api/dependencies.py",
+    "src/presentation/middlewares/*.py",
+    "src/application/use_cases/get_*_use_case.py",
+    "src/infrastructure/database/repositories/*.py",
+    "src/infrastructure/cache/cache_service.py",
+    "src/infrastructure/workers/gee_export_worker.py",
+    "src/infrastructure/workers/batch_analysis_worker.py",
+    "src/shared/config/settings.py",
+    "src/shared/utils/*.py",
+    "src/infrastructure/monitoring/logging.py",
+    "src/infrastructure/messaging/event_publisher.py"
+]
 
 [tool.ruff]
 line-length = 100

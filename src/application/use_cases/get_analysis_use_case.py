@@ -42,7 +42,7 @@ def _dict_to_field_analysis_dto(d: dict[str, Any]) -> FieldAnalysisDTO:
             trend=VegetationTrend(veg["trend"]),
             health=VegetationHealth(veg["health"]),
         ) if veg else None,
-        water=WaterDTO(mean_ndwi=water["mean_ndwi"]) if water else None,
+        water=WaterDTO(mean_ndmi=water.get("mean_ndmi", water.get("mean_ndwi"))) if water else None,
         alerts=[
             AlertDTO(
                 id=a["id"],
@@ -107,7 +107,7 @@ class GetAnalysisUseCase:
                 trend=metrics.trend,
                 health=metrics.health,
             )
-            water_dto = WaterDTO(mean_ndwi=metrics.ndwi_mean)
+            water_dto = WaterDTO(mean_ndmi=metrics.ndmi_mean)
 
         alerts = [
             AlertDTO(

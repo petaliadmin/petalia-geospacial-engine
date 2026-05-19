@@ -19,7 +19,10 @@ class MockIndexResult:
     ndvi_min = 0.50
     ndvi_max = 0.90
     ndvi_std = 0.08
-    ndwi_mean = 0.55
+    ndmi_mean = 0.55
+    ndre_mean = 0.25
+    savi_mean = 0.45
+    evi2_mean = 0.60
     variability_index = 0.10
     from src.domain.value_objects.vegetation_trend import VegetationTrend
     trend = VegetationTrend.UP
@@ -48,7 +51,7 @@ async def test_pipeline_marks_analysis_completed():
     analysis_id = analysis.id
 
     with (
-        patch("src.infrastructure.workers.analysis_worker.get_session_factory") as mock_sf,
+        patch("src.infrastructure.workers.analysis_worker.get_worker_session_factory") as mock_sf,
         patch("src.infrastructure.workers.analysis_worker.initialize_earth_engine"),
         patch("src.infrastructure.workers.analysis_worker.SentinelImageFetcher") as mock_fetcher,
         patch("src.infrastructure.workers.analysis_worker.IndexCalculator") as mock_calc,
@@ -85,6 +88,7 @@ async def test_pipeline_marks_analysis_completed():
             result = await _execute_pipeline(
                 analysis_id=analysis_id,
                 field_id="field-uuid",
+                external_field_id="ext-uuid",
                 geometry=GEOMETRY,
                 requested_metrics=["NDVI", "TILES", "ALERTS"],
             )
@@ -99,7 +103,7 @@ async def test_pipeline_marks_failed_on_error():
     analysis = Analysis.create("field-uuid", [RequestedMetric.NDVI])
 
     with (
-        patch("src.infrastructure.workers.analysis_worker.get_session_factory") as mock_sf,
+        patch("src.infrastructure.workers.analysis_worker.get_worker_session_factory") as mock_sf,
         patch("src.infrastructure.workers.analysis_worker.initialize_earth_engine"),
         patch("src.infrastructure.workers.analysis_worker.SentinelImageFetcher") as mock_fetcher,
     ):
@@ -121,6 +125,7 @@ async def test_pipeline_marks_failed_on_error():
                 await _execute_pipeline(
                     analysis_id=analysis.id,
                     field_id="field-uuid",
+                    external_field_id="ext-uuid",
                     geometry=GEOMETRY,
                     requested_metrics=["NDVI"],
                 )

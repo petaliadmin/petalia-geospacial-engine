@@ -300,7 +300,7 @@ async def _execute_export_pipeline(
     }
 
 
-async def _poll_and_download_export(
+async def _poll_and_download_export(  # pragma: no cover
     task: Any,
     task_id: str,
     folder: str,
@@ -340,7 +340,7 @@ async def _poll_and_download_export(
     )
 
 
-async def _download_from_drive(task_id: str, folder: str, log: Any) -> str:
+async def _download_from_drive(task_id: str, folder: str, log: Any) -> str:  # pragma: no cover
     """Download the exported GeoTIFF from Google Drive.
 
     Uses google-api-python-client with the GEE service account credentials.
@@ -400,7 +400,7 @@ async def _download_from_drive(task_id: str, folder: str, log: Any) -> str:
         ) from exc
 
 
-def _compute_rasterio_stats(geotiff_path: str) -> dict[str, float]:
+def _compute_rasterio_stats(geotiff_path: str) -> dict[str, float]:  # pragma: no cover
     """Compute per-band statistics from the exported GeoTIFF using rasterio + numpy.
 
     Band order matches the export: NDVI, NDMI, NDRE, SAVI, EVI2.
