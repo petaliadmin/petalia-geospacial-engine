@@ -56,7 +56,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U petalia -d petalia_geo_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -278,6 +278,17 @@ jobs:
             echo "==> Waiting for postgres to be healthy (up to 120s)"
             timeout 120 bash -c \
               'until docker inspect --format="{{.State.Health.Status}}" petalia_postgres 2>/dev/null | grep -q "^healthy$"; do sleep 3; done'
+
+            echo "==> Ensuring database and PostGIS extensions exist"
+            PG_USER=$(docker exec petalia_postgres printenv POSTGRES_USER)
+            PG_DB=$(docker exec petalia_postgres printenv POSTGRES_DB)
+            docker exec petalia_postgres psql -U "$PG_USER" -tc \
+              "SELECT 1 FROM pg_database WHERE datname = '$PG_DB'" \
+              | grep -q 1 || \
+              docker exec petalia_postgres psql -U "$PG_USER" -c "CREATE DATABASE \"$PG_DB\";"
+            docker exec petalia_postgres psql -U "$PG_USER" -d "$PG_DB" -c \
+              "CREATE EXTENSION IF NOT EXISTS postgis;
+               CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 
             echo "==> Running migrations"
             $COMPOSE run --rm api alembic upgrade head
